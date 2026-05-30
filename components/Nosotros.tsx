@@ -43,7 +43,7 @@ export default function Nosotros() {
               </p>
             </div>
             <div className="mt-8 flex gap-4">
-              
+              <a
                 href="https://instagram.com/bleu.club"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -52,7 +52,7 @@ export default function Nosotros() {
               >
                 <InstagramIcon size={18} />
               </a>
-              
+              <a
                 href={whatsappUrl()}
                 target="_blank"
                 rel="noopener noreferrer"

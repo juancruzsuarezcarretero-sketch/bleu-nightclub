@@ -66,7 +66,6 @@ export default function Contacto() {
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
@@ -79,7 +78,6 @@ export default function Contacto() {
       },
       { threshold: 0.2 }
     );
-
     observer.observe(section);
     return () => observer.disconnect();
   }, [clearReservation]);
@@ -91,10 +89,8 @@ export default function Contacto() {
       return;
     }
     if (data.website) return;
-
     setSubmitStatus("loading");
     setErrorMessage("");
-
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -119,12 +115,9 @@ export default function Contacto() {
   const onReservationSubmit = async (data: ReservationFormData) => {
     if (!selection) return;
     if (data.website) return;
-
     setSubmitStatus("loading");
     setErrorMessage("");
-
     const price = calculateReservationPrice(selection, data.personas);
-
     try {
       const res = await fetch("/api/reservations", {
         method: "POST",
@@ -142,7 +135,6 @@ export default function Contacto() {
         setErrorMessage(result.error || "Error al guardar la reserva");
         return;
       }
-
       const message = buildReservationWhatsAppMessage({
         sector: selection.sector,
         nombre: data.nombre,
@@ -151,7 +143,6 @@ export default function Contacto() {
         price,
         mensaje: data.mensaje,
       });
-
       window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
       setSubmitStatus("success");
       clearReservation();
@@ -162,9 +153,7 @@ export default function Contacto() {
     }
   };
 
-  const themeStyles = selection
-    ? SELECTION_THEME_STYLES[selection.theme]
-    : null;
+  const themeStyles = selection ? SELECTION_THEME_STYLES[selection.theme] : null;
 
   return (
     <section
@@ -194,7 +183,6 @@ export default function Contacto() {
                   aria-hidden="true"
                   className="absolute -left-[9999px] h-0 w-0 opacity-0"
                 />
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Motivo *
@@ -205,7 +193,6 @@ export default function Contacto() {
                     className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0]/70 outline-none"
                   />
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Selección
@@ -216,7 +203,6 @@ export default function Contacto() {
                     className={`w-full border px-4 py-3 font-mono text-sm outline-none ${themeStyles?.border} ${themeStyles?.bg} ${themeStyles?.text}`}
                   />
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Nombre completo *
@@ -231,7 +217,6 @@ export default function Contacto() {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     WhatsApp *
@@ -246,7 +231,6 @@ export default function Contacto() {
                     </p>
                   )}
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
@@ -283,7 +267,6 @@ export default function Contacto() {
                     )}
                   </div>
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Mensaje (opcional)
@@ -294,19 +277,14 @@ export default function Contacto() {
                     className="w-full resize-none border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]"
                   />
                 </div>
-
                 {submitStatus === "success" && (
                   <p className="font-mono text-sm text-green-400">
-                    ✓ WhatsApp abierto. Completá el envío para confirmar tu
-                    reserva.
+                    ✓ WhatsApp abierto. Completá el envío para confirmar tu reserva.
                   </p>
                 )}
                 {submitStatus === "error" && (
-                  <p className="font-mono text-sm text-red-400">
-                    {errorMessage}
-                  </p>
+                  <p className="font-mono text-sm text-red-400">{errorMessage}</p>
                 )}
-
                 <button
                   type="submit"
                   disabled={submitStatus === "loading"}
@@ -332,7 +310,6 @@ export default function Contacto() {
                   aria-hidden="true"
                   className="absolute -left-[9999px] h-0 w-0 opacity-0"
                 />
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Nombre completo *
@@ -347,7 +324,6 @@ export default function Contacto() {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Teléfono / WhatsApp
@@ -357,7 +333,6 @@ export default function Contacto() {
                     className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]"
                   />
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Motivo *
@@ -373,7 +348,6 @@ export default function Contacto() {
                     <option value="Otro">Otro</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Mensaje *
@@ -389,23 +363,19 @@ export default function Contacto() {
                     </p>
                   )}
                 </div>
-
                 {submitStatus === "success" && (
                   <p className="font-mono text-sm text-green-400">
                     ✓ Mensaje enviado. Te respondemos pronto.
                   </p>
                 )}
                 {submitStatus === "error" && (
-                  <p className="font-mono text-sm text-red-400">
-                    {errorMessage}
-                  </p>
+                  <p className="font-mono text-sm text-red-400">{errorMessage}</p>
                 )}
                 {submitStatus === "rate-limited" && (
                   <p className="font-mono text-sm text-yellow-400">
                     Límite de envíos alcanzado. Contactanos por WhatsApp.
                   </p>
                 )}
-
                 <button
                   type="submit"
                   disabled={submitStatus === "loading"}
@@ -422,7 +392,6 @@ export default function Contacto() {
               <h3 className="font-bebas text-2xl tracking-wider text-[#F0F0F0]">
                 INFORMACIÓN
               </h3>
-
               <div className="mt-8 space-y-6">
                 <div className="flex items-start gap-4">
                   <Clock size={18} className="mt-0.5 text-[#00AAFF]" />
@@ -435,7 +404,6 @@ export default function Contacto() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-4">
                   <MessageCircle size={18} className="mt-0.5 text-[#25D366]" />
                   <div>
@@ -452,7 +420,6 @@ export default function Contacto() {
                     </a>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-4">
                   <InstagramIcon size={18} className="mt-0.5 text-[#00AAFF]" />
                   <div>
