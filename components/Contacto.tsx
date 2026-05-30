@@ -31,7 +31,7 @@ export default function Contacto() {
   const { selection, clearReservation } = useReservation();
   const isReservationMode = Boolean(selection);
 
-  const [submitStatus, setSubmitStatus] = useState
+  const [submitStatus, setSubmitStatus] = useState<
     "idle" | "loading" | "success" | "error" | "rate-limited"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -411,6 +411,7 @@ export default function Contacto() {
                       WhatsApp
                     </p>
                     
+                    <a
                       href={whatsappUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -429,7 +430,8 @@ export default function Contacto() {
                     <div className="mt-2 flex flex-col gap-1">
                       
                         href="https://instagram.com/bleu.club"
-                        target="_blank"
+                      <a
+                        href="https://instagram.com/bleu.club"
                         rel="noopener noreferrer"
                         className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]"
                       >
