@@ -2,16 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { FadeIn } from "@/components/FadeIn";
-import MesaDetailPanel, { type MesaInfo } from "@/components/MesaDetailPanel";
+import SectorReservationPanel from "@/components/SectorReservationPanel";
+import type { SectorSelection, StandingSectorId } from "@/lib/vip-sectors";
 
 type TableStatus = "available" | "reserved" | "selected";
 
-interface Table extends MesaInfo {
+interface Table {
+  id: string;
+  label: string;
+  tier: "vip" | "ultra";
   cx: number;
   cy: number;
 }
-
-const WHATSAPP_NUMBER = "5493512345678";
 
 const TABLES: Table[] = [
   { id: "V1", label: "V1", tier: "vip", cx: 500, cy: 55 },
@@ -56,9 +58,10 @@ export default function MapaVIP({
     });
     return initial;
   });
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [selection, setSelection] = useState<SectorSelection | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [highlightSector, setHighlightSector] = useState<string | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
   useEffect(() => {
     if (externalSector) {
@@ -68,8 +71,22 @@ export default function MapaVIP({
     }
   }, [externalSector]);
 
+  const openPanel = useCallback((next: SectorSelection) => {
+    setSelection(next);
+    setPanelOpen(true);
+  }, []);
+
+  const handleStandingClick = (
+    sectorId: StandingSectorId,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    openPanel({ kind: "standing", sectorId });
+  };
+
   const handleTableClick = useCallback(
-    (table: Table) => {
+    (table: Table, e: React.MouseEvent) => {
+      e.stopPropagation();
       if (tableStatuses[table.id] === "reserved") return;
 
       setTableStatuses((prev) => {
@@ -81,35 +98,30 @@ export default function MapaVIP({
         return next;
       });
 
-      setSelectedTable(table);
-      setPanelOpen(true);
+      setSelectedTableId(table.id);
+      openPanel({
+        kind: "table",
+        tableId: table.id,
+        tableLabel: table.label,
+        tier: table.tier,
+      });
     },
-    [tableStatuses]
+    [tableStatuses, openPanel]
   );
-
-  const handleSectorClick = (sector: string) => {
-    const message = encodeURIComponent(
-      `Hola! Quiero consultar disponibilidad en ${sector}`
-    );
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
 
   const closePanel = () => {
     setPanelOpen(false);
-    if (selectedTable) {
+    setSelection(null);
+    if (selectedTableId) {
       setTableStatuses((prev) => {
         const next = { ...prev };
-        if (next[selectedTable.id] === "selected") {
-          next[selectedTable.id] = "available";
+        if (next[selectedTableId] === "selected") {
+          next[selectedTableId] = "available";
         }
         return next;
       });
+      setSelectedTableId(null);
     }
-    setSelectedTable(null);
   };
 
   const isHighlighted = (sector: string) =>
@@ -126,7 +138,7 @@ export default function MapaVIP({
             RESERVÁ TU MESA
           </h2>
           <p className="mb-8 font-mono text-xs text-[#F0F0F0]/50">
-            Seleccioná tu mesa · Verde: disponible · Rojo: reservada · Azul:
+            Tocá un sector o mesa · Verde: disponible · Rojo: reservada · Azul:
             seleccionada
           </p>
         </FadeIn>
@@ -140,9 +152,10 @@ export default function MapaVIP({
                 role="img"
                 aria-label="Mapa interactivo del boliche Bleu Nightclub"
               >
+                {/* VIP GOLD — Entrepiso */}
                 <g
-                  className={`cursor-pointer transition-opacity ${isHighlighted("Entrepiso") && !isHighlighted("VIP") ? "opacity-100" : ""}`}
-                  onClick={() => handleSectorClick("Entrepiso")}
+                  className="cursor-pointer"
+                  onClick={(e) => handleStandingClick("vip-gold", e)}
                 >
                   <rect
                     x="10"
@@ -151,22 +164,35 @@ export default function MapaVIP({
                     height="170"
                     rx="4"
                     fill="#0b1522"
-                    stroke="#1a3050"
+                    stroke="#C89020"
                     strokeWidth="1"
+                    opacity={isHighlighted("VIP Gold") ? 1 : 0.95}
                   />
                   <text
                     x="210"
-                    y="100"
+                    y="90"
                     textAnchor="middle"
-                    fill="#F0F0F0"
-                    opacity="0.5"
+                    fill="#C89020"
                     fontSize="14"
                     fontFamily="monospace"
+                    letterSpacing="2"
                   >
-                    ENTREPISO
+                    VIP GOLD
+                  </text>
+                  <text
+                    x="210"
+                    y="115"
+                    textAnchor="middle"
+                    fill="#F0F0F0"
+                    opacity="0.4"
+                    fontSize="9"
+                    fontFamily="monospace"
+                  >
+                    $35.000 / persona
                   </text>
                 </g>
 
+                {/* Entrepiso VIP — mesas V1-V5 */}
                 <g>
                   <rect
                     x="420"
@@ -188,7 +214,7 @@ export default function MapaVIP({
                     fontFamily="monospace"
                     letterSpacing="2"
                   >
-                    ENTREPISO VIP
+                    ENTREPISO VIP · MESAS
                   </text>
                   <line
                     x1="660"
@@ -201,9 +227,10 @@ export default function MapaVIP({
                   />
                 </g>
 
+                {/* VIP STANDING — VIP N3 */}
                 <g
                   className="cursor-pointer"
-                  onClick={() => handleSectorClick("VIP N3")}
+                  onClick={(e) => handleStandingClick("vip-standing", e)}
                 >
                   <rect
                     x="10"
@@ -214,18 +241,29 @@ export default function MapaVIP({
                     fill="#15100a"
                     stroke="#C89020"
                     strokeWidth="0.5"
-                    opacity={isHighlighted("VIP N3") ? 1 : 0.9}
+                    opacity={isHighlighted("VIP Standing") ? 1 : 0.9}
                   />
                   <text
                     x="85"
                     y="220"
                     textAnchor="middle"
                     fill="#C89020"
-                    fontSize="10"
+                    fontSize="9"
                     fontFamily="monospace"
                     letterSpacing="1"
                   >
-                    VIP N3
+                    VIP STANDING
+                  </text>
+                  <text
+                    x="85"
+                    y="238"
+                    textAnchor="middle"
+                    fill="#F0F0F0"
+                    opacity="0.35"
+                    fontSize="8"
+                    fontFamily="monospace"
+                  >
+                    $50.000 / pers.
                   </text>
                   {[250, 290, 330, 370, 410].map((y) => (
                     <rect
@@ -241,19 +279,9 @@ export default function MapaVIP({
                       opacity="0.6"
                     />
                   ))}
-                  <text
-                    x="85"
-                    y="460"
-                    textAnchor="middle"
-                    fill="#F0F0F0"
-                    opacity="0.3"
-                    fontSize="9"
-                    fontFamily="monospace"
-                  >
-                    BANQUETAS
-                  </text>
                 </g>
 
+                {/* Pista principal — sin reserva */}
                 <g>
                   <rect
                     x="170"
@@ -300,6 +328,7 @@ export default function MapaVIP({
                   </text>
                 </g>
 
+                {/* ULTRA acceso sin mesa + mesas U1-U3 */}
                 <g>
                   <rect
                     x="560"
@@ -311,6 +340,8 @@ export default function MapaVIP({
                     stroke="#9933cc"
                     strokeWidth="0.5"
                     opacity={isHighlighted("Ultra") ? 1 : 0.9}
+                    className="cursor-pointer"
+                    onClick={(e) => handleStandingClick("ultra-access", e)}
                   />
                   <text
                     x="660"
@@ -320,55 +351,70 @@ export default function MapaVIP({
                     fontSize="10"
                     fontFamily="monospace"
                     letterSpacing="1"
+                    pointerEvents="none"
                   >
                     ULTRA VIP
                   </text>
+                  <text
+                    x="660"
+                    y="228"
+                    textAnchor="middle"
+                    fill="#F0F0F0"
+                    opacity="0.35"
+                    fontSize="8"
+                    fontFamily="monospace"
+                    pointerEvents="none"
+                  >
+                    $100.000 / pers.
+                  </text>
                   <rect
                     x="570"
-                    y="220"
+                    y="240"
                     width="85"
-                    height="130"
+                    height="110"
                     rx="3"
                     fill="#120a28"
                     stroke="#9933cc"
                     strokeWidth="0.3"
+                    pointerEvents="none"
                   />
                   <text
                     x="612"
-                    y="235"
+                    y="255"
                     textAnchor="middle"
                     fill="#9933cc"
                     fontSize="8"
                     fontFamily="monospace"
+                    pointerEvents="none"
                   >
                     PALCO 2
                   </text>
                   <rect
                     x="665"
-                    y="220"
+                    y="240"
                     width="85"
-                    height="130"
+                    height="110"
                     rx="3"
                     fill="#120a28"
                     stroke="#9933cc"
                     strokeWidth="0.3"
+                    pointerEvents="none"
                   />
                   <text
                     x="707"
-                    y="235"
+                    y="255"
                     textAnchor="middle"
                     fill="#9933cc"
                     fontSize="8"
                     fontFamily="monospace"
+                    pointerEvents="none"
                   >
                     PALCO 3
                   </text>
                 </g>
 
-                <g
-                  className="cursor-pointer"
-                  onClick={() => handleSectorClick("Barra")}
-                >
+                {/* Barra — sin reserva */}
+                <g>
                   <rect
                     x="770"
                     y="190"
@@ -394,10 +440,8 @@ export default function MapaVIP({
                   </text>
                 </g>
 
-                <g
-                  className="cursor-pointer"
-                  onClick={() => handleSectorClick("Backstage VIP")}
-                >
+                {/* Backstage — decorativo */}
+                <g>
                   <rect
                     x="10"
                     y="490"
@@ -422,6 +466,7 @@ export default function MapaVIP({
                   </text>
                 </g>
 
+                {/* Mesas */}
                 {TABLES.map((table) => {
                   const status = tableStatuses[table.id];
                   const colors = statusColors[status];
@@ -435,7 +480,7 @@ export default function MapaVIP({
                       style={{
                         transformOrigin: `${table.cx}px ${table.cy}px`,
                       }}
-                      onClick={() => handleTableClick(table)}
+                      onClick={(e) => handleTableClick(table, e)}
                     >
                       <circle
                         cx={table.cx}
@@ -471,8 +516,8 @@ export default function MapaVIP({
         </FadeIn>
       </div>
 
-      <MesaDetailPanel
-        mesa={selectedTable}
+      <SectorReservationPanel
+        selection={selection}
         isOpen={panelOpen}
         onClose={closePanel}
       />
