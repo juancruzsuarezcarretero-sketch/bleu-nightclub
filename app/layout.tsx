@@ -17,15 +17,37 @@ const dmMono = DM_Mono({
   display: "swap",
 });
 
+const SITE_URL = "https://bleu-nightclub.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Bleu Nightclub | La noche es tuya — Córdoba, Argentina",
-  description:
-    "Bleu Nightclub — La experiencia nocturna más exclusiva de Córdoba. Eventos, reservas VIP y las mejores noches del Centro.",
-  keywords: ["nightclub", "Córdoba", "Bleu", "fiestas", "VIP", "eventos"],
+  title: "BLEU Nightclub",
+  description: "La noche es tuya — Córdoba, Argentina",
+  metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: "Bleu Nightclub",
+    title: "BLEU Nightclub",
     description: "La noche es tuya — Córdoba, Argentina",
+    url: SITE_URL,
+    siteName: "BLEU Nightclub",
     type: "website",
+    locale: "es_AR",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "BLEU Nightclub",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BLEU Nightclub",
+    description: "La noche es tuya — Córdoba, Argentina",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png", type: "image/png" }],
   },
 };
 
