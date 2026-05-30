@@ -84,10 +84,8 @@ export default function Nosotros() {
           </FadeIn>
         </div>
 
-        {/* Viernes vs Sábado */}
         <FadeIn delay={0.2}>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {/* VIERNES — BLEU */}
             <div className="rounded-lg border border-[#0066FF]/40 bg-[#0066FF]/5 p-8">
               <p className="font-mono text-xs tracking-widest text-[#0066FF]/60">
                 VIERNES
@@ -100,7 +98,6 @@ export default function Nosotros() {
                 y la mejor producción del centro.
               </p>
             </div>
-            {/* SÁBADOS — BARTO */}
             <div className="rounded-lg border border-[#C89020]/40 bg-[#C89020]/5 p-8">
               <p className="font-mono text-xs tracking-widest text-[#C89020]/60">
                 SÁBADOS
