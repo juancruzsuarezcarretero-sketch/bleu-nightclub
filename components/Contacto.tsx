@@ -10,8 +10,8 @@ import {
   type ContactFormData,
   type ReservationFormData,
 } from "@/lib/validations";
-import { Clock, Mail, MessageCircle } from "lucide-react";
-import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
+import { Clock, MessageCircle } from "lucide-react";
+import { InstagramIcon } from "@/components/icons/SocialIcons";
 import {
   whatsappUrl,
   WHATSAPP_DISPLAY,
@@ -31,7 +31,7 @@ export default function Contacto() {
   const { selection, clearReservation } = useReservation();
   const isReservationMode = Boolean(selection);
 
-  const [submitStatus, setSubmitStatus] = useState<
+  const [submitStatus, setSubmitStatus] = useState
     "idle" | "loading" | "success" | "error" | "rate-limited"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -350,22 +350,6 @@ export default function Contacto() {
 
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    {...generalForm.register("email")}
-                    className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]"
-                  />
-                  {generalForm.formState.errors.email && (
-                    <p className="mt-1 font-mono text-xs text-red-400">
-                      {generalForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">
                     Teléfono / WhatsApp
                   </label>
                   <input
@@ -444,28 +428,11 @@ export default function Contacto() {
                   <Clock size={18} className="mt-0.5 text-[#00AAFF]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">
-                      Horarios de atención
+                      Horarios
                     </p>
                     <p className="mt-1 font-mono text-sm text-[#F0F0F0]/70">
-                      Lun — Vie · 10:00 a 20:00 hs
-                      <br />
-                      Sáb · 12:00 a 18:00 hs
+                      Viernes y Sábados · 00:00 a 05:00 hs
                     </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <Mail size={18} className="mt-0.5 text-[#00AAFF]" />
-                  <div>
-                    <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">
-                      Email
-                    </p>
-                    <a
-                      href="mailto:info@bleu.com.ar"
-                      className="mt-1 font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]"
-                    >
-                      info@bleu.com.ar
-                    </a>
                   </div>
                 </div>
 
@@ -475,7 +442,7 @@ export default function Contacto() {
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">
                       WhatsApp
                     </p>
-                    <a
+                    
                       href={whatsappUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -493,17 +460,13 @@ export default function Contacto() {
                       Redes sociales
                     </p>
                     <div className="mt-2 flex flex-col gap-1">
-                      <a
-                        href="#"
+                      
+                        href="https://instagram.com/bleu.club"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]"
                       >
-                        @bleuoficial — Instagram
-                      </a>
-                      <a
-                        href="#"
-                        className="flex items-center gap-1.5 font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]"
-                      >
-                        <TikTokIcon /> @bleuoficial — TikTok
+                        @bleu.club — Instagram
                       </a>
                     </div>
                   </div>
