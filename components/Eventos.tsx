@@ -6,7 +6,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/FadeIn";
 import { useMounted } from "@/lib/useMounted";
 
-type EventCategory = "House" | "Techno" | "Latin" | "Open Format" | "Bass House";
+type EventCategory =
+  | "House"
+  | "Techno"
+  | "Latin"
+  | "Open Format"
+  | "Bass House"
+  | "Reggaeton/Latin";
+
+type FilterCategory = "House" | "Techno" | "Latin" | "Open Format";
 
 interface Event {
   id: number;
@@ -14,7 +22,7 @@ interface Event {
   date: string;
   dateShort: string;
   category: EventCategory;
-  filterCategory: "House" | "Techno" | "Latin" | "Open Format";
+  filterCategory: FilterCategory;
   image: string;
 }
 
@@ -64,9 +72,10 @@ const events: Event[] = [
 const filters = ["Todos", "House", "Techno", "Latin", "Open Format"] as const;
 type Filter = (typeof filters)[number];
 
-const categoryColors: Record<string, string> = {
+const categoryColors: Record<EventCategory, string> = {
   House: "bg-bleu-electric/20 text-bleu-cyan border-bleu-electric/30",
   Techno: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+  Latin: "bg-pink-500/20 text-pink-300 border-pink-500/30",
   "Open Format": "bg-bleu-cyan/20 text-bleu-cyan border-bleu-cyan/30",
   "Bass House": "bg-bleu-gold/20 text-bleu-gold border-bleu-gold/30",
   "Reggaeton/Latin": "bg-pink-500/20 text-pink-300 border-pink-500/30",
@@ -141,7 +150,7 @@ export default function Eventos() {
                     {event.name}
                   </h3>
                   <span
-                    className={`mt-3 inline-block w-fit border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${categoryColors[event.category] ?? categoryColors["House"]}`}
+                    className={`mt-3 inline-block w-fit border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${categoryColors[event.category]}`}
                   >
                     {event.category}
                   </span>
