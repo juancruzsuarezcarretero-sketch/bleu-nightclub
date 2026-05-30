@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
+import { useReservation } from "@/context/ReservationContext";
 
 const TITLE = "LA NOCHE ES TUYA";
 
@@ -101,6 +102,7 @@ function ParticleCanvas() {
 
 export default function Hero() {
   const mounted = useMounted();
+  const { clearReservation, goToContact } = useReservation();
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -110,6 +112,11 @@ export default function Hero() {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  const handleReserveMesa = () => {
+    clearReservation();
+    goToContact();
+  };
 
   const scrollTo = (id: string) => {
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth" });
@@ -182,7 +189,7 @@ export default function Hero() {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <button
             type="button"
-            onClick={() => scrollTo("#reservas")}
+            onClick={handleReserveMesa}
             className="w-full rounded-none border border-[#0066FF] bg-[#0066FF] px-8 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:bg-[#0066FF]/90 sm:w-auto"
           >
             Reservar Mesa

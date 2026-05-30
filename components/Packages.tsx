@@ -2,76 +2,93 @@
 
 import { Check } from "lucide-react";
 import { FadeIn } from "@/components/FadeIn";
+import type { PackageId } from "@/lib/whatsapp";
+import { reservationFromPackage } from "@/lib/reservation-selection";
+import { useReservation } from "@/context/ReservationContext";
 
-export interface PackageSelection {
-  sector: string;
-  package: "Silver" | "Gold" | "Ultra";
-}
-
-interface PackagesProps {
-  onReserve: (selection: PackageSelection) => void;
-}
-
-const packages = [
+const packages: {
+  id: PackageId;
+  name: string;
+  tagline: string;
+  badge: string | null;
+  price: string;
+  features: string[];
+  accent: string;
+  glow: string;
+  priceColor: string;
+}[] = [
   {
-    id: "silver",
-    name: "SILVER",
-    tagline: "La entrada perfecta",
+    id: "vip-gold",
+    name: "VIP GOLD",
+    tagline: "Acceso VIP premium",
     badge: "MÁS ELEGIDO",
-    price: "Desde $85.000",
-    features: [
-      "Mesa en Entrepiso VIP",
-      "1 botella premium nacional",
-      "6 mixers",
-      "Hasta 4 personas",
-    ],
-    sector: "Entrepiso VIP",
-    package: "Silver" as const,
-    accent: "border-bleu-gold/40",
-    glow: "hover:shadow-glow-gold",
+    price: "$35.000 por persona",
+    features: ["Acceso sector VIP Gold", "Sin límite de personas"],
+    accent: "border-[#C89020]/40",
+    glow: "hover:shadow-[0_0_20px_rgba(200,144,32,0.25)]",
+    priceColor: "text-[#C89020]",
   },
   {
-    id: "gold",
-    name: "GOLD",
-    tagline: "La experiencia completa",
+    id: "vip-standing",
+    name: "VIP STANDING",
+    tagline: "La experiencia standing",
     badge: null,
-    price: "Desde $150.000",
-    features: [
-      "Mesa en Ultra VIP Palco 2 o 3",
-      "2 botellas premium (nacional o importada)",
-      "8 mixers + botella de agua",
-      "Hasta 6 personas",
-    ],
-    sector: "Ultra VIP",
-    package: "Gold" as const,
-    accent: "border-bleu-electric/40",
-    glow: "hover:shadow-glow",
+    price: "$50.000 por persona",
+    features: ["Acceso VIP Standing", "Sin límite de personas"],
+    accent: "border-[#C89020]/40",
+    glow: "hover:shadow-[0_0_20px_rgba(200,144,32,0.25)]",
+    priceColor: "text-[#C89020]",
   },
   {
     id: "ultra",
     name: "ULTRA",
-    tagline: "La noche sin límites",
+    tagline: "Acceso Ultra VIP",
     badge: null,
-    price: "Desde $280.000",
+    price: "$100.000 por persona",
+    features: ["Acceso Ultra VIP", "Sin límite de personas"],
+    accent: "border-[#9933cc]/40",
+    glow: "hover:shadow-[0_0_20px_rgba(153,51,204,0.25)]",
+    priceColor: "text-[#9933cc]",
+  },
+  {
+    id: "mesa-vip",
+    name: "MESA VIP",
+    tagline: "Tu mesa en el sector VIP",
+    badge: null,
+    price: "$700.000 mesa completa",
     features: [
-      "Mesa Backstage VIP",
-      "3 botellas importadas a elección",
-      "Mixers ilimitados + snacks",
       "Hasta 10 personas",
-      "Host personal dedicada",
-      "Acceso prioritario",
+      "Lugar reservado",
+      "Cristalería individual",
+      "Moza a disposición",
     ],
-    sector: "Backstage VIP",
-    package: "Ultra" as const,
-    accent: "border-red-800/40",
-    glow: "hover:shadow-[0_0_20px_rgba(170,0,34,0.4)]",
+    accent: "border-[#C89020]/40",
+    glow: "hover:shadow-[0_0_20px_rgba(200,144,32,0.25)]",
+    priceColor: "text-[#C89020]",
+  },
+  {
+    id: "mesa-ultra",
+    name: "MESA ULTRA VIP",
+    tagline: "La experiencia definitiva",
+    badge: null,
+    price: "$1.200.000 mesa completa",
+    features: [
+      "Hasta 10 personas",
+      "Lugar reservado",
+      "Cristalería individual",
+      "Moza a disposición",
+    ],
+    accent: "border-[#9933cc]/40",
+    glow: "hover:shadow-[0_0_20px_rgba(153,51,204,0.25)]",
+    priceColor: "text-[#9933cc]",
   },
 ];
 
-export default function Packages({ onReserve }: PackagesProps) {
-  const handleReserve = (pkg: (typeof packages)[0]) => {
-    onReserve({ sector: pkg.sector, package: pkg.package });
-    document.querySelector("#reservas")?.scrollIntoView({ behavior: "smooth" });
+export default function Packages() {
+  const { startReservation } = useReservation();
+
+  const handleReserve = (packageId: PackageId) => {
+    startReservation(reservationFromPackage(packageId));
   };
 
   return (
@@ -83,14 +100,18 @@ export default function Packages({ onReserve }: PackagesProps) {
           </h2>
         </FadeIn>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 md:overflow-visible">
+        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 xl:grid-cols-5 lg:overflow-visible">
           {packages.map((pkg, index) => (
-            <FadeIn key={pkg.id} delay={index * 0.08} className="min-w-[300px] flex-shrink-0 snap-center md:min-w-0">
+            <FadeIn
+              key={pkg.id}
+              delay={index * 0.08}
+              className="min-w-[280px] flex-shrink-0 snap-center lg:min-w-0"
+            >
               <article
-                className={`glass-card relative h-full rounded-xl border p-6 transition-all duration-300 ${pkg.accent} ${pkg.glow}`}
+                className={`glass-card relative flex h-full flex-col rounded-xl border p-6 transition-all duration-300 ${pkg.accent} ${pkg.glow}`}
               >
                 {pkg.badge && (
-                  <span className="absolute -top-3 left-6 border border-bleu-gold bg-bleu-gold/20 px-3 py-0.5 font-mono text-[10px] uppercase tracking-widest text-bleu-gold">
+                  <span className="absolute -top-3 left-6 border border-[#C89020] bg-[#C89020]/20 px-3 py-0.5 font-mono text-[10px] uppercase tracking-widest text-[#C89020]">
                     {pkg.badge}
                   </span>
                 )}
@@ -102,26 +123,29 @@ export default function Packages({ onReserve }: PackagesProps) {
                   {pkg.tagline}
                 </p>
 
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-6 flex-1 space-y-3">
                   {pkg.features.map((feature) => (
                     <li
                       key={feature}
                       className="flex items-start gap-2 font-mono text-xs text-[#F0F0F0]/70"
                     >
-                      <Check size={14} className="mt-0.5 flex-shrink-0 text-[#00AAFF]" />
+                      <Check
+                        size={14}
+                        className="mt-0.5 flex-shrink-0 text-[#00AAFF]"
+                      />
                       {feature}
                     </li>
                   ))}
                 </ul>
 
-                <p className="mt-6 font-bebas text-2xl text-[#C89020]">
+                <p className={`mt-6 font-bebas text-xl leading-tight ${pkg.priceColor}`}>
                   {pkg.price}
                 </p>
 
                 <button
                   type="button"
-                  onClick={() => handleReserve(pkg)}
-                  className="mt-4 w-full border border-[#0066FF]/50 py-2.5 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF]"
+                  onClick={() => handleReserve(pkg.id)}
+                  className="mt-4 w-full border border-[#0066FF]/50 py-2.5 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
                 >
                   Reservar
                 </button>

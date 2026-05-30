@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
+import { useReservation } from "@/context/ReservationContext";
 
 const navLinks = [
   { label: "Eventos", href: "#eventos" },
@@ -24,8 +25,13 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [mounted]);
 
+  const { clearReservation } = useReservation();
+
   const handleNavClick = (href: string) => {
     setMenuOpen(false);
+    if (href === "#contacto") {
+      clearReservation();
+    }
     const el = document.querySelector(href);
     el?.scrollIntoView({ behavior: "smooth" });
   };

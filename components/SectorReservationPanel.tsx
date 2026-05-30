@@ -5,16 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Minus, Plus } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
 import {
-  STANDING_SECTORS,
-  TABLE_TIERS,
-  THEME_STYLES,
+  MAP_SECTORS,
+  MAP_THEME_STYLES,
   formatARS,
-  type SectorSelection,
-} from "@/lib/vip-sectors";
-import { getReservationWhatsAppMessage, whatsappUrl } from "@/lib/whatsapp";
+  getSectorTypeLabel,
+  calculateSectorTotal,
+  type MapSectorSelection,
+} from "@/lib/map-sectors";
+import { reservationFromMapSelection } from "@/lib/reservation-selection";
+import { useReservation } from "@/context/ReservationContext";
 
 interface SectorReservationPanelProps {
-  selection: SectorSelection | null;
+  selection: MapSectorSelection | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -23,51 +25,33 @@ function PanelContent({
   selection,
   onClose,
 }: {
-  selection: SectorSelection;
+  selection: MapSectorSelection;
   onClose: () => void;
 }) {
-  const isStanding = selection.kind === "standing";
-  const standingConfig =
-    selection.kind === "standing" ? STANDING_SECTORS[selection.sectorId] : null;
-  const tableConfig =
-    selection.kind === "table" ? TABLE_TIERS[selection.tier] : null;
-  const config = standingConfig ?? tableConfig!;
-  const theme = THEME_STYLES[config.theme];
+  const config = MAP_SECTORS[selection.sectorId];
+  const theme = MAP_THEME_STYLES[config.theme];
+  const perPerson = Boolean(config.pricePerPerson);
+  const isTable = config.type === "mesa" && config.fixedPrice;
 
-  const defaultPersons = isStanding ? 2 : 4;
+  const defaultPersons = perPerson ? 2 : isTable ? 4 : 2;
   const [persons, setPersons] = useState(defaultPersons);
 
   useEffect(() => {
     setPersons(defaultPersons);
-  }, [selection, defaultPersons]);
+  }, [selection.sectorId, defaultPersons]);
 
-  const totalPrice = isStanding
-    ? persons * standingConfig!.pricePerPerson
-    : tableConfig!.totalPrice;
-
-  const title =
-    selection.kind === "table"
-      ? `Mesa ${selection.tableLabel}`
-      : config.name;
-
-  const subtitle =
-    selection.kind === "table" ? config.name : "Acceso sin mesa";
-
-  const capacityLabel = isStanding
-    ? standingConfig!.capacityLabel
-    : `Hasta ${tableConfig!.capacity} personas`;
+  const totalPrice = calculateSectorTotal(config, persons);
+  const { startReservation } = useReservation();
 
   const handleReserve = () => {
-    const message = getReservationWhatsAppMessage(selection);
-    window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
+    startReservation(reservationFromMapSelection(selection, persons));
+    onClose();
   };
 
+  const maxPersons = perPerson ? 99 : config.maxCapacity ?? 99;
+
   const adjustPersons = (delta: number) => {
-    setPersons((prev) => {
-      const min = 1;
-      const max = isStanding ? 99 : tableConfig!.capacity;
-      return Math.min(max, Math.max(min, prev + delta));
-    });
+    setPersons((prev) => Math.min(maxPersons, Math.max(1, prev + delta)));
   };
 
   return (
@@ -80,10 +64,10 @@ function PanelContent({
             className="font-mono text-xs uppercase tracking-widest"
             style={{ color: theme.accent }}
           >
-            {subtitle}
+            {config.typeLabel ?? getSectorTypeLabel(config.type)}
           </p>
           <h3 className="mt-1 font-bebas text-3xl tracking-wider text-[#F0F0F0]">
-            {title}
+            {config.name}
           </h3>
         </div>
         <button
@@ -105,17 +89,17 @@ function PanelContent({
           }}
         >
           <p className="font-mono text-[10px] uppercase tracking-wider text-[#F0F0F0]/40">
-            {isStanding ? "Precio por persona" : "Precio mesa completa"}
+            {perPerson ? "Precio por persona" : "Precio total"}
           </p>
           <p
             className="mt-1 font-bebas text-4xl tracking-wide"
             style={{ color: theme.accent }}
           >
-            {isStanding
-              ? formatARS(standingConfig!.pricePerPerson)
-              : formatARS(tableConfig!.totalPrice)}
+            {perPerson
+              ? formatARS(config.pricePerPerson!)
+              : formatARS(config.fixedPrice!)}
           </p>
-          {isStanding && (
+          {perPerson && (
             <p className="mt-1 font-mono text-xs text-[#F0F0F0]/50">
               por persona
             </p>
@@ -127,7 +111,7 @@ function PanelContent({
             Capacidad
           </p>
           <p className="mt-1 font-mono text-sm text-[#F0F0F0]">
-            {capacityLabel}
+            {config.capacityLabel}
           </p>
         </div>
 
@@ -176,10 +160,10 @@ function PanelContent({
             </button>
           </div>
           <p className="mt-4 text-center font-mono text-sm text-[#F0F0F0]/70">
-            {isStanding ? (
+            {perPerson ? (
               <>
                 {persons} {persons === 1 ? "persona" : "personas"} ×{" "}
-                {formatARS(standingConfig!.pricePerPerson)} ={" "}
+                {formatARS(config.pricePerPerson!)} ={" "}
                 <span style={{ color: theme.accent }}>
                   {formatARS(totalPrice)}
                 </span>
@@ -201,7 +185,7 @@ function PanelContent({
         onClick={handleReserve}
         className={`mt-8 w-full py-3.5 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all ${theme.buttonBg} ${theme.buttonHover}`}
       >
-        {config.reserveLabel}
+        Reservar
       </button>
     </div>
   );

@@ -23,7 +23,7 @@ export const contactSchema = z.object({
 
 export type ContactFormData = z.infer<typeof contactSchema>;
 
-export const reservationSchema = z.object({
+export const reservationFormSchema = z.object({
   nombre: z
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
@@ -32,15 +32,14 @@ export const reservationSchema = z.object({
     .string()
     .min(8, "Ingresá un WhatsApp válido")
     .max(20),
+  fecha: z.string().min(1, "Seleccioná una fecha"),
   personas: z.coerce
     .number()
-    .min(2, "Mínimo 2 personas")
-    .max(20, "Máximo 20 personas"),
-  fecha: z.string().min(1, "Seleccioná una fecha"),
-  sector: z.string().min(1),
-  mesa: z.string().optional(),
-  package: z.enum(["Silver", "Gold", "Ultra"]),
+    .min(1, "Mínimo 1 persona")
+    .max(99, "Máximo 99 personas"),
   mensaje: z.string().max(500).optional(),
+  motivo: z.literal("Reservas"),
+  website: z.string().max(0, "Campo inválido").optional(),
 });
 
-export type ReservationFormData = z.infer<typeof reservationSchema>;
+export type ReservationFormData = z.infer<typeof reservationFormSchema>;
