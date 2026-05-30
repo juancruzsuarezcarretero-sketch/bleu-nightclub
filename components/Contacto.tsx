@@ -108,23 +108,35 @@ export default function Contacto() {
     setSubmitStatus("loading");
     setErrorMessage("");
     const price = calculateReservationPrice(selection, data.personas);
+
+    const message = buildReservationWhatsAppMessage({
+      sector: selection.sector,
+      nombre: data.nombre,
+      fecha: data.fecha,
+      personas: data.personas,
+      price,
+      mensaje: data.mensaje,
+    });
+
     try {
-      const res = await fetch("/api/reservations", {
+      await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, sector: selection.sector, seleccion: selection.displayLabel, precio: price }),
+        body: JSON.stringify({
+          ...data,
+          sector: selection.sector,
+          seleccion: selection.displayLabel,
+          precio: price,
+        }),
       });
-      const result = await res.json();
-      if (!res.ok) { setSubmitStatus("error"); setErrorMessage(result.error || "Error al guardar la reserva"); return; }
-      const message = buildReservationWhatsAppMessage({ sector: selection.sector, nombre: data.nombre, fecha: data.fecha, personas: data.personas, price, mensaje: data.mensaje });
-      window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
-      setSubmitStatus("success");
-      clearReservation();
-      reservationForm.reset({ motivo: "Reservas", personas: 2 });
     } catch {
-      setSubmitStatus("error");
-      setErrorMessage("Error de conexion. Intentá de nuevo.");
+      // Si falla Supabase, igual abrimos WhatsApp
     }
+
+    window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
+    setSubmitStatus("success");
+    clearReservation();
+    reservationForm.reset({ motivo: "Reservas", personas: 2 });
   };
 
   const themeStyles = selection ? SELECTION_THEME_STYLES[selection.theme] : null;
