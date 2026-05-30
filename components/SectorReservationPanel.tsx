@@ -11,8 +11,7 @@ import {
   formatARS,
   type SectorSelection,
 } from "@/lib/vip-sectors";
-
-const WHATSAPP_NUMBER = "5493512345678";
+import { getReservationWhatsAppMessage, whatsappUrl } from "@/lib/whatsapp";
 
 interface SectorReservationPanelProps {
   selection: SectorSelection | null;
@@ -59,19 +58,8 @@ function PanelContent({
     : `Hasta ${tableConfig!.capacity} personas`;
 
   const handleReserve = () => {
-    let message: string;
-
-    if (selection.kind === "standing") {
-      message = `Hola! Quiero reservar ${standingConfig!.name} para ${persons} ${persons === 1 ? "persona" : "personas"}. Total: ${formatARS(totalPrice)}`;
-    } else {
-      message = `Hola! Quiero reservar la Mesa ${selection.tableLabel} (${tableConfig!.name}) para ${persons} ${persons === 1 ? "persona" : "personas"}. Total: ${formatARS(totalPrice)}`;
-    }
-
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    const message = getReservationWhatsAppMessage(selection);
+    window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
   };
 
   const adjustPersons = (delta: number) => {

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
 import { FadeIn } from "@/components/FadeIn";
+import { whatsappUrl } from "@/lib/whatsapp";
 
 const photos = [
   "https://images.unsplash.com/photo-1566737238500-ac588a25a0a8?w=600&h=400&fit=crop",
@@ -59,7 +60,7 @@ export default function Nosotros() {
               <TikTokIcon />
             </a>
             <a
-              href="https://wa.me/5493512345678"
+              href={whatsappUrl()}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"

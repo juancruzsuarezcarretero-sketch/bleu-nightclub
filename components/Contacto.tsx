@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { contactSchema, type ContactFormData } from "@/lib/validations";
 import { Clock, Mail, MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
+import { whatsappUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 const MAX_SUBMISSIONS = 3;
 const SESSION_KEY = "bleu_contact_submissions";
@@ -231,12 +232,12 @@ export default function Contacto() {
                     WhatsApp
                   </p>
                   <a
-                    href="https://wa.me/5493512345678"
+                    href={whatsappUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-1 font-mono text-sm text-bleu-white/70 hover:text-[#25D366]"
                   >
-                    +54 9 351 234-5678
+                    {WHATSAPP_DISPLAY}
                   </a>
                 </div>
               </div>

@@ -2,6 +2,7 @@
 
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
+import { whatsappUrl } from "@/lib/whatsapp";
 
 export default function Footer() {
   return (
@@ -27,7 +28,7 @@ export default function Footer() {
             <TikTokIcon size={22} />
           </a>
           <a
-            href="https://wa.me/5493512345678"
+            href={whatsappUrl()}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp"
