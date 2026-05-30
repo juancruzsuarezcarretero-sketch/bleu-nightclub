@@ -116,23 +116,50 @@ export default function Contacto() {
     }
   };
 
-  const onReservationSubmit = (data: ReservationFormData) => {
+  const onReservationSubmit = async (data: ReservationFormData) => {
     if (!selection) return;
+    if (data.website) return;
+
+    setSubmitStatus("loading");
+    setErrorMessage("");
 
     const price = calculateReservationPrice(selection, data.personas);
-    const message = buildReservationWhatsAppMessage({
-      sector: selection.sector,
-      nombre: data.nombre,
-      fecha: data.fecha,
-      personas: data.personas,
-      price,
-      mensaje: data.mensaje,
-    });
 
-    window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
-    setSubmitStatus("success");
-    clearReservation();
-    reservationForm.reset({ motivo: "Reservas", personas: 2 });
+    try {
+      const res = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          sector: selection.sector,
+          seleccion: selection.displayLabel,
+          precio: price,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setSubmitStatus("error");
+        setErrorMessage(result.error || "Error al guardar la reserva");
+        return;
+      }
+
+      const message = buildReservationWhatsAppMessage({
+        sector: selection.sector,
+        nombre: data.nombre,
+        fecha: data.fecha,
+        personas: data.personas,
+        price,
+        mensaje: data.mensaje,
+      });
+
+      window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
+      setSubmitStatus("success");
+      clearReservation();
+      reservationForm.reset({ motivo: "Reservas", personas: 2 });
+    } catch {
+      setSubmitStatus("error");
+      setErrorMessage("Error de conexión. Intentá de nuevo.");
+    }
   };
 
   const themeStyles = selection
@@ -244,7 +271,9 @@ export default function Contacto() {
                       type="number"
                       min={1}
                       max={99}
-                      {...reservationForm.register("personas")}
+                      {...reservationForm.register("personas", {
+                        valueAsNumber: true,
+                      })}
                       className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]"
                     />
                     {reservationForm.formState.errors.personas && (
@@ -272,16 +301,22 @@ export default function Contacto() {
                     reserva.
                   </p>
                 )}
+                {submitStatus === "error" && (
+                  <p className="font-mono text-sm text-red-400">
+                    {errorMessage}
+                  </p>
+                )}
 
                 <button
                   type="submit"
-                  className={`w-full py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all ${
+                  disabled={submitStatus === "loading"}
+                  className={`w-full py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all disabled:opacity-50 ${
                     selection.theme === "purple"
                       ? "bg-[#9933cc] hover:bg-[#9933cc]/90"
                       : "bg-[#C89020] hover:bg-[#C89020]/90"
                   }`}
                 >
-                  Enviar
+                  {submitStatus === "loading" ? "Guardando..." : "Enviar"}
                 </button>
               </form>
             ) : (

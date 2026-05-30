@@ -33,8 +33,8 @@ export const reservationFormSchema = z.object({
     .min(8, "Ingresá un WhatsApp válido")
     .max(20),
   fecha: z.string().min(1, "Seleccioná una fecha"),
-  personas: z.coerce
-    .number()
+  personas: z
+    .number({ error: "Ingresá un número válido" })
     .min(1, "Mínimo 1 persona")
     .max(99, "Máximo 99 personas"),
   mensaje: z.string().max(500).optional(),
@@ -43,3 +43,11 @@ export const reservationFormSchema = z.object({
 });
 
 export type ReservationFormData = z.infer<typeof reservationFormSchema>;
+
+export const reservationApiSchema = reservationFormSchema.extend({
+  sector: z.string().min(1),
+  seleccion: z.string().min(1),
+  precio: z.string().min(1),
+});
+
+export type ReservationApiData = z.infer<typeof reservationApiSchema>;

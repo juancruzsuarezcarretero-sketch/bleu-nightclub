@@ -12,7 +12,7 @@ type EventCategory =
   | "Latin"
   | "Open Format"
   | "Bass House"
-  | "Latin";
+  | "Reggaeton/Latin";
 
 type FilterCategory = "House" | "Techno" | "Latin" | "Open Format";
 

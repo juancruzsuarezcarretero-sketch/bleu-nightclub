@@ -82,6 +82,8 @@ function Reservable({
   onHover,
   children,
 }: ReservableProps) {
+  const config = MAP_SECTORS[id];
+
   return (
     <g
       role="button"
