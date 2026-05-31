@@ -4,7 +4,6 @@ import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
-import { useReservation } from "@/context/ReservationContext";
 
 const TITLE = "LA NOCHE ES TUYA";
 
@@ -102,7 +101,6 @@ function ParticleCanvas() {
 
 export default function Hero() {
   const mounted = useMounted();
-  const { clearReservation, goToContact } = useReservation();
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -114,8 +112,7 @@ export default function Hero() {
   }, []);
 
   const handleReserveMesa = () => {
-    clearReservation();
-    goToContact();
+    document.querySelector("#reservas")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollTo = (id: string) => {
