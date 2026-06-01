@@ -9,30 +9,15 @@ import {
   type MapSectorSelection,
 } from "@/lib/map-sectors";
 
-const BOX_IDS: MapSectorId[] = [
-  "box-1",
-  "box-2",
-  "box-3",
-  "box-4",
-  "box-5",
-];
-
-function SofaIcon({ x, y, color }: { x: number; y: number; color: string }) {
+/* Icono de sillón (vista en planta) tipo el del plano original */
+function CouchIcon({ x, y, w = 44, h = 32, color }: { x: number; y: number; w?: number; h?: number; color: string }) {
+  const seat = w / 3;
   return (
-    <g transform={`translate(${x}, ${y})`} fill={color} opacity={0.85}>
-      <rect x={0} y={10} width={36} height={12} rx={2} />
-      <rect x={-2} y={4} width={10} height={18} rx={2} />
-      <rect x={28} y={4} width={10} height={18} rx={2} />
-      <rect x={2} y={0} width={32} height={8} rx={2} />
-    </g>
-  );
-}
-
-function StairsMarker({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x}, ${y})`}>
-      <text x={0} y={0} textAnchor="middle" fill="white" fontSize={18} fontFamily="Bebas Neue, sans-serif">↑</text>
-      <text x={0} y={14} textAnchor="middle" fill="white" fillOpacity={0.5} fontSize={7} fontFamily="DM Mono, monospace" letterSpacing={1}>ESCALERAS</text>
+    <g transform={`translate(${x}, ${y})`} fill="none" stroke={color} strokeWidth={1.4} opacity={0.9}>
+      <rect x={0} y={0} width={w} height={h} rx={2} />
+      <line x1={seat} y1={4} x2={seat} y2={h - 4} />
+      <line x1={seat * 2} y1={4} x2={seat * 2} y2={h - 4} />
+      <line x1={4} y1={h / 2} x2={w - 4} y2={h / 2} />
     </g>
   );
 }
@@ -62,24 +47,15 @@ function Reservable({ id, selected, hovered, onSelect, onHover, children }: Rese
       onBlur={() => onHover(null)}
       style={{
         filter: selected
-          ? `drop-shadow(0 0 10px ${config.accent}) drop-shadow(0 0 20px ${config.accent}80)`
+          ? `drop-shadow(0 0 8px ${config.accent}) drop-shadow(0 0 16px ${config.accent}80)`
           : hovered
-            ? `drop-shadow(0 0 6px ${config.accent}60)`
+            ? `drop-shadow(0 0 5px ${config.accent}70)`
             : undefined,
+        transition: "filter 0.2s",
       }}
     >
       {children}
     </g>
-  );
-}
-
-function DecorativeLabel({ x, y, lines, size = 11, anchor = "middle" }: { x: number; y: number; lines: string[]; size?: number; anchor?: "middle" | "start"; }) {
-  return (
-    <text x={x} y={y} textAnchor={anchor} fill="white" fillOpacity={0.55} fontSize={size} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>
-      {lines.map((line, i) => (
-        <tspan key={line} x={x} dy={i === 0 ? 0 : size + 2}>{line}</tspan>
-      ))}
-    </text>
   );
 }
 
@@ -93,43 +69,20 @@ export default function MapaVIP() {
     setPanelOpen(true);
   }, []);
 
-  const handleClose = useCallback(() => {
-    setPanelOpen(false);
-  }, []);
+  const handleClose = useCallback(() => setPanelOpen(false), []);
 
   const panelSelection: MapSectorSelection | null = selectedId ? { sectorId: selectedId } : null;
 
-  const sectorFill = (id: MapSectorId) => {
+  const fill = (id: MapSectorId) => {
     const c = MAP_SECTORS[id];
-    if (selectedId === id) return c.hoverFill;
-    if (hoveredId === id) return c.hoverFill;
-    return c.fill;
+    return (selectedId === id || hoveredId === id) ? c.hoverFill : c.fill;
   };
+  const stroke = (id: MapSectorId) => (selectedId === id ? "#FFFFFF" : MAP_SECTORS[id].stroke);
+  const sw = (id: MapSectorId) => (selectedId === id ? 2.5 : 1.6);
 
-  const sectorStroke = (id: MapSectorId) => {
-    const c = MAP_SECTORS[id];
-    return selectedId === id ? "#FFFFFF" : c.stroke;
-  };
-
-  const sectorStrokeWidth = (id: MapSectorId) => selectedId === id ? 3 : 1.5;
-
-  // Layout dimensions
-  // viewBox: 0 0 900 720
-  // Left column (boxes VIP): x=12, w=110
-  // Center (pista): x=132, w=380
-  // Right column (ultra boxes): x=522, w=260
-  // Far right (barra): x=792, w=48
-  // Total used: ~840
-
-  const BOX_W = 110;
-  const BOX_H = 72;
-  const BOX_X = 12;
-  const PISTA_X = 132;
-  const PISTA_W = 380;
-  const ULTRA_X = 522;
-  const ULTRA_W = 260;
-  const BARRA_X = 792;
-  const BARRA_W = 48;
+  // Estilo de etiqueta blanca tipo plano (Bebas)
+  const labelStyle = { fontFamily: "Bebas Neue, sans-serif" } as const;
+  const monoStyle = { fontFamily: "DM Mono, monospace" } as const;
 
   return (
     <section id="reservas" className="relative bg-[#050508] py-24 md:py-32">
@@ -138,147 +91,170 @@ export default function MapaVIP() {
           <div className="mb-12 text-center">
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-[#F0F0F0]/40">Plano del local</p>
             <h2 className="mt-2 font-bebas text-4xl tracking-wider text-[#F0F0F0] md:text-5xl">Mapa VIP Interactivo</h2>
-            <p className="mx-auto mt-4 max-w-xl font-mono text-sm text-[#F0F0F0]/50">Tocá un sector reservable para ver precios e iniciar tu reserva</p>
+            <p className="mx-auto mt-4 max-w-xl font-mono text-sm text-[#F0F0F0]/50">
+              Tocá un sector reservable para ver precios e iniciar tu reserva
+            </p>
           </div>
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <div className="overflow-x-auto rounded-xl border border-white/15 bg-[#050508] p-2 md:p-4">
-            <svg viewBox="0 0 850 720" className="mx-auto w-full min-w-[320px] max-w-4xl" aria-label="Mapa VIP del boliche Bleu">
-              <rect width={850} height={720} fill="#050508" />
+          <div className="overflow-x-auto rounded-xl border border-white/10 bg-black p-3 md:p-6">
+            <svg
+              viewBox="0 0 720 1000"
+              className="mx-auto block w-full min-w-[300px] max-w-xl"
+              aria-label="Mapa VIP del boliche Bleu"
+              style={{ strokeLinejoin: "round", strokeLinecap: "round" }}
+            >
+              <rect width={720} height={1000} fill="#000000" />
 
-              {/* ── FILA SUPERIOR ── */}
+              {/* ════════ BARRA CAÑADA (trapecio, pared izq diagonal) ════════ */}
+              {/* contorno: arriba recto, izquierda diagonal hacia abajo */}
+              <path
+                d="M 150 120 L 360 120 L 360 230 L 95 230 L 150 120 Z"
+                fill="#0a0a0e" stroke="white" strokeWidth={1.6} strokeOpacity={0.85}
+              />
+              <text x={265} y={170} textAnchor="middle" fill="white" fontSize={17} style={labelStyle} letterSpacing={2}>BARRA</text>
+              <text x={265} y={192} textAnchor="middle" fill="white" fontSize={17} style={labelStyle} letterSpacing={2}>CAÑADA</text>
 
-              {/* Barra Cañada */}
-              <rect x={BOX_X} y={12} width={380} height={70} fill="#0c0c10" stroke="white" strokeWidth={1.5} strokeOpacity={0.35} />
-              <DecorativeLabel x={202} y={52} lines={["BARRA CAÑADA"]} size={14} />
-
-              {/* Golden — forma de L: banda superior ancha + columna derecha */}
-              <Reservable id="golden" selected={selectedId === "golden"} hovered={hoveredId === "golden"} onSelect={handleSelect} onHover={setHoveredId}>
-                {/* parte horizontal arriba */}
+              {/* ════════ GOLDEN (forma de L con diagonal) ════════ */}
+              <Reservable id="golden" selected={selectedId==="golden"} hovered={hoveredId==="golden"} onSelect={handleSelect} onHover={setHoveredId}>
+                {/* banda superior + columna derecha con chaflán inferior-izquierdo */}
                 <path
-                  d={`M ${PISTA_X + PISTA_W + 10} 12 H ${BARRA_X - 4} V 82 H ${PISTA_X + PISTA_W + 10} Z`}
-                  fill={sectorFill("golden")}
-                  stroke={sectorStroke("golden")}
-                  strokeWidth={sectorStrokeWidth("golden")}
+                  d="M 360 120 L 640 120 L 640 290 L 605 330 L 605 470 L 540 470 L 540 200 L 360 200 Z"
+                  fill={fill("golden")} stroke={stroke("golden")} strokeWidth={sw("golden")}
                 />
-                {/* columna derecha bajando */}
-                <path
-                  d={`M ${ULTRA_X + ULTRA_W + 4} 82 H ${BARRA_X - 4} V 260 H ${ULTRA_X + ULTRA_W + 4} Z`}
-                  fill={sectorFill("golden")}
-                  stroke={sectorStroke("golden")}
-                  strokeWidth={sectorStrokeWidth("golden")}
-                />
-                <text x={660} y={44} textAnchor="middle" fill="white" fontSize={15} fontFamily="Bebas Neue, sans-serif" letterSpacing={3}>GOLDEN</text>
-                <text x={660} y={62} textAnchor="middle" fill={MAP_SECTORS.golden.accent} fontSize={9} fontFamily="DM Mono, monospace">$35.000 / persona</text>
-                {/* sofás en la columna derecha */}
-                <SofaIcon x={805} y={100} color={MAP_SECTORS.golden.accent} />
-                <SofaIcon x={805} y={160} color={MAP_SECTORS.golden.accent} />
-                <SofaIcon x={805} y={210} color={MAP_SECTORS.golden.accent} />
+                <text x={500} y={160} textAnchor="middle" fill="white" fontSize={18} style={labelStyle} letterSpacing={3}>GOLDEN</text>
+                <text x={500} y={180} textAnchor="middle" fill={MAP_SECTORS.golden.accent} fontSize={10} style={monoStyle}>$35.000 / persona</text>
+                {/* sillones en banda superior */}
+                <CouchIcon x={392} y={132} color={MAP_SECTORS.golden.accent} />
+                <CouchIcon x={470} y={132} color={MAP_SECTORS.golden.accent} />
+                {/* sillones en columna derecha */}
+                <CouchIcon x={556} y={230} w={40} color={MAP_SECTORS.golden.accent} />
+                <CouchIcon x={556} y={300} w={40} color={MAP_SECTORS.golden.accent} />
               </Reservable>
 
-              {/* ── ENTREPISO ── */}
-              <rect x={BOX_X} y={92} width={380} height={50} fill="#0c0c10" stroke="white" strokeWidth={1} strokeOpacity={0.3} />
-              <DecorativeLabel x={202} y={122} lines={["ENTREPISO"]} size={12} />
-              {/* escaleras */}
-              <StairsMarker x={170} y={108} />
-              <StairsMarker x={340} y={108} />
+              {/* ════════ ENTREPISO (no reservable, zona negra) ════════ */}
+              <text x={350} y={310} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={16} style={labelStyle} letterSpacing={3}>ENTREPISO</text>
 
-              {/* ── COLUMNA IZQUIERDA: 5 Boxes VIP ── */}
-              {BOX_IDS.map((id, i) => {
+              {/* ════════ ESCALERAS izquierda (líneas) ════════ */}
+              <g stroke="white" strokeWidth={1.2} strokeOpacity={0.85}>
+                <line x1={95} y1={345} x2={210} y2={345} />
+                <line x1={95} y1={357} x2={210} y2={357} />
+                <line x1={95} y1={369} x2={210} y2={369} />
+                <line x1={100} y1={381} x2={210} y2={381} />
+              </g>
+
+              {/* ════════ BOX VIP 1–5 (columna izquierda) ════════ */}
+              {(["box-1","box-2","box-3","box-4","box-5"] as MapSectorId[]).map((id, i) => {
                 const config = MAP_SECTORS[id];
                 const num = id.replace("box-", "");
-                const y = 152 + i * (BOX_H + 6);
+                const y = 392 + i * 66;
+                const x = 95, w = 130, h = 60;
                 return (
-                  <Reservable key={id} id={id} selected={selectedId === id} hovered={hoveredId === id} onSelect={handleSelect} onHover={setHoveredId}>
-                    <rect x={BOX_X} y={y} width={BOX_W} height={BOX_H} fill={sectorFill(id)} stroke={sectorStroke(id)} strokeWidth={sectorStrokeWidth(id)} />
-                    <text x={BOX_X + BOX_W / 2} y={y + 22} textAnchor="middle" fill="white" fontSize={13} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>BOX {num}</text>
-                    <SofaIcon x={BOX_X + BOX_W / 2 - 18} y={y + 28} color={config.accent} />
-                    <text x={BOX_X + BOX_W / 2} y={y + BOX_H - 8} textAnchor="middle" fill={config.accent} fontSize={7} fontFamily="DM Mono, monospace">$700.000</text>
+                  <Reservable key={id} id={id} selected={selectedId===id} hovered={hoveredId===id} onSelect={handleSelect} onHover={setHoveredId}>
+                    <rect x={x} y={y} width={w} height={h} fill={fill(id)} stroke={stroke(id)} strokeWidth={sw(id)} />
+                    <text x={x + 32} y={y + 26} textAnchor="middle" fill="white" fontSize={13} style={labelStyle} letterSpacing={1.5}>BOX {num}</text>
+                    <CouchIcon x={x + w - 52} y={y + 14} w={38} h={30} color={config.accent} />
+                    <text x={x + 32} y={y + 48} textAnchor="middle" fill={config.accent} fontSize={6.5} style={monoStyle}>$700.000</text>
                   </Reservable>
                 );
               })}
 
-              {/* ── PISTA PRINCIPAL ── */}
-              <rect x={PISTA_X} y={152} width={PISTA_W} height={350} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.35} />
-              <DecorativeLabel x={PISTA_X + PISTA_W / 2} y={320} lines={["PISTA PRINCIPAL", "NIVEL 1"]} size={18} />
+              {/* escaleras pequeñas entre boxes y pista */}
+              <g stroke="white" strokeWidth={1} strokeOpacity={0.7}>
+                <line x1={225} y1={400} x2={270} y2={400} />
+                <line x1={225} y1={410} x2={270} y2={410} />
+                <line x1={225} y1={420} x2={270} y2={420} />
+                <line x1={225} y1={430} x2={270} y2={430} />
+              </g>
 
-              {/* ── COLUMNA DERECHA: 3 Ultra Boxes ── */}
+              {/* ════════ PISTA PRINCIPAL (con chaflán esquina sup-der) ════════ */}
+              <path
+                d="M 270 392 L 520 392 L 575 447 L 575 690 L 540 720 L 270 720 Z"
+                fill="#08080d" stroke="white" strokeWidth={1.6} strokeOpacity={0.85}
+              />
+              <text x={420} y={560} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={labelStyle} letterSpacing={3}>PISTA</text>
+              <text x={420} y={584} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={labelStyle} letterSpacing={3}>PRINCIPAL</text>
+              <text x={420} y={606} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={13} style={labelStyle} letterSpacing={2}>NIVEL 1</text>
 
-              {/* Palco 2 label */}
-              <text x={BARRA_X - 10} y={200} textAnchor="end" fill="white" fillOpacity={0.4} fontSize={9} fontFamily="Bebas Neue, sans-serif" letterSpacing={2} transform={`rotate(90, ${BARRA_X - 10}, 200)`}>PALCO 2</text>
+              {/* ════════ ULTRA BOXES derecha (Palco 2: Box1,Box2 / Palco 3: Box3) ════════ */}
 
               {/* Ultra Box 1 */}
-              <Reservable id="ultra-box-1" selected={selectedId === "ultra-box-1"} hovered={hoveredId === "ultra-box-1"} onSelect={handleSelect} onHover={setHoveredId}>
-                <rect x={ULTRA_X} y={82} width={ULTRA_W} height={80} fill={sectorFill("ultra-box-1")} stroke={sectorStroke("ultra-box-1")} strokeWidth={sectorStrokeWidth("ultra-box-1")} />
-                <text x={ULTRA_X + ULTRA_W / 2} y={116} textAnchor="middle" fill="white" fontSize={12} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>BOX 1</text>
-                <SofaIcon x={ULTRA_X + ULTRA_W / 2 - 18} y={122} color={MAP_SECTORS["ultra-box-1"].accent} />
+              <Reservable id="ultra-box-1" selected={selectedId==="ultra-box-1"} hovered={hoveredId==="ultra-box-1"} onSelect={handleSelect} onHover={setHoveredId}>
+                <rect x={540} y={392} width={150} height={96} fill={fill("ultra-box-1")} stroke={stroke("ultra-box-1")} strokeWidth={sw("ultra-box-1")} />
+                <text x={585} y={432} textAnchor="middle" fill="white" fontSize={14} style={labelStyle} letterSpacing={1.5}>BOX</text>
+                <text x={585} y={452} textAnchor="middle" fill="white" fontSize={14} style={labelStyle} letterSpacing={1.5}>1</text>
+                <CouchIcon x={628} y={418} w={44} h={44} color={MAP_SECTORS["ultra-box-1"].accent} />
               </Reservable>
 
               {/* Ultra Box 2 */}
-              <Reservable id="ultra-box-2" selected={selectedId === "ultra-box-2"} hovered={hoveredId === "ultra-box-2"} onSelect={handleSelect} onHover={setHoveredId}>
-                <rect x={ULTRA_X} y={170} width={ULTRA_W} height={80} fill={sectorFill("ultra-box-2")} stroke={sectorStroke("ultra-box-2")} strokeWidth={sectorStrokeWidth("ultra-box-2")} />
-                <text x={ULTRA_X + ULTRA_W / 2} y={204} textAnchor="middle" fill="white" fontSize={12} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>BOX 2</text>
-                <SofaIcon x={ULTRA_X + ULTRA_W / 2 - 18} y={210} color={MAP_SECTORS["ultra-box-2"].accent} />
+              <Reservable id="ultra-box-2" selected={selectedId==="ultra-box-2"} hovered={hoveredId==="ultra-box-2"} onSelect={handleSelect} onHover={setHoveredId}>
+                <rect x={540} y={494} width={150} height={96} fill={fill("ultra-box-2")} stroke={stroke("ultra-box-2")} strokeWidth={sw("ultra-box-2")} />
+                <text x={585} y={534} textAnchor="middle" fill="white" fontSize={14} style={labelStyle} letterSpacing={1.5}>BOX</text>
+                <text x={585} y={554} textAnchor="middle" fill="white" fontSize={14} style={labelStyle} letterSpacing={1.5}>2</text>
+                <CouchIcon x={628} y={520} w={44} h={44} color={MAP_SECTORS["ultra-box-2"].accent} />
               </Reservable>
-
-              {/* Palco 3 label */}
-              <text x={BARRA_X - 10} y={360} textAnchor="end" fill="white" fillOpacity={0.4} fontSize={9} fontFamily="Bebas Neue, sans-serif" letterSpacing={2} transform={`rotate(90, ${BARRA_X - 10}, 360)`}>PALCO 3</text>
 
               {/* Ultra Box 3 */}
-              <Reservable id="ultra-box-3" selected={selectedId === "ultra-box-3"} hovered={hoveredId === "ultra-box-3"} onSelect={handleSelect} onHover={setHoveredId}>
-                <rect x={ULTRA_X} y={258} width={ULTRA_W} height={80} fill={sectorFill("ultra-box-3")} stroke={sectorStroke("ultra-box-3")} strokeWidth={sectorStrokeWidth("ultra-box-3")} />
-                <text x={ULTRA_X + ULTRA_W / 2} y={292} textAnchor="middle" fill="white" fontSize={12} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>BOX 3</text>
-                <SofaIcon x={ULTRA_X + ULTRA_W / 2 - 18} y={298} color={MAP_SECTORS["ultra-box-3"].accent} />
+              <Reservable id="ultra-box-3" selected={selectedId==="ultra-box-3"} hovered={hoveredId==="ultra-box-3"} onSelect={handleSelect} onHover={setHoveredId}>
+                <rect x={540} y={596} width={150} height={96} fill={fill("ultra-box-3")} stroke={stroke("ultra-box-3")} strokeWidth={sw("ultra-box-3")} />
+                <text x={585} y={636} textAnchor="middle" fill="white" fontSize={14} style={labelStyle} letterSpacing={1.5}>BOX</text>
+                <text x={585} y={656} textAnchor="middle" fill="white" fontSize={14} style={labelStyle} letterSpacing={1.5}>3</text>
+                <CouchIcon x={628} y={622} w={44} h={44} color={MAP_SECTORS["ultra-box-3"].accent} />
               </Reservable>
 
-              {/* Ultra Standing */}
-              <Reservable id="ultra-standing" selected={selectedId === "ultra-standing"} hovered={hoveredId === "ultra-standing"} onSelect={handleSelect} onHover={setHoveredId}>
-                <rect x={ULTRA_X} y={346} width={ULTRA_W} height={156} fill={sectorFill("ultra-standing")} stroke={sectorStroke("ultra-standing")} strokeWidth={sectorStrokeWidth("ultra-standing")} />
-                <text x={ULTRA_X + ULTRA_W / 2} y={418} textAnchor="middle" fill="white" fontSize={13} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>ULTRA STANDING</text>
-                <text x={ULTRA_X + ULTRA_W / 2} y={436} textAnchor="middle" fill={MAP_SECTORS["ultra-standing"].accent} fontSize={8} fontFamily="DM Mono, monospace">$100.000 / persona</text>
+              {/* labels PALCO 2 / PALCO 3 (rotados, a la derecha de los boxes) */}
+              <text x={706} y={490} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={labelStyle} letterSpacing={2} transform="rotate(90, 706, 490)">PALCO 2</text>
+              <text x={706} y={644} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={labelStyle} letterSpacing={2} transform="rotate(90, 706, 644)">PALCO 3</text>
+
+              {/* ════════ ULTRA STANDING (entre boxes y backstage) ════════ */}
+              {/* en el plano real es la franja azul vertical derecha que conecta;
+                  la ubicamos como zona reservable bajo el box 3, antes de la barra */}
+              <Reservable id="ultra-standing" selected={selectedId==="ultra-standing"} hovered={hoveredId==="ultra-standing"} onSelect={handleSelect} onHover={setHoveredId}>
+                <path d="M 575 696 L 690 696 L 690 770 L 600 770 L 540 720 L 575 692 Z"
+                  fill={fill("ultra-standing")} stroke={stroke("ultra-standing")} strokeWidth={sw("ultra-standing")} />
+                <text x={628} y={734} textAnchor="middle" fill="white" fontSize={10} style={labelStyle} letterSpacing={1}>ULTRA STANDING</text>
+                <text x={628} y={748} textAnchor="middle" fill={MAP_SECTORS["ultra-standing"].accent} fontSize={7} style={monoStyle}>$100.000 / p.</text>
               </Reservable>
 
-              {/* ── BARRA DERECHA ── */}
-              <rect x={BARRA_X} y={82} width={BARRA_W} height={500} fill="#0c0c10" stroke="white" strokeWidth={1.5} strokeOpacity={0.35} />
-              <text x={BARRA_X + BARRA_W / 2} y={340} textAnchor="middle" fill="white" fillOpacity={0.45} fontSize={11} fontFamily="Bebas Neue, sans-serif" letterSpacing={3} transform={`rotate(90, ${BARRA_X + BARRA_W / 2}, 340)`}>BARRA</text>
+              {/* ════════ BARRA pequeña (vertical, abajo derecha) ════════ */}
+              <rect x={648} y={774} width={42} height={150} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.85} />
+              <text x={669} y={849} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={labelStyle} letterSpacing={2} transform="rotate(90, 669, 849)">BARRA</text>
 
-              {/* ── FILA INFERIOR ── */}
-
-              {/* VIP Nivel 3 Standing */}
-              <Reservable id="vip-n3-standing" selected={selectedId === "vip-n3-standing"} hovered={hoveredId === "vip-n3-standing"} onSelect={handleSelect} onHover={setHoveredId}>
-                <rect x={BOX_X} y={512} width={110} height={196} fill={sectorFill("vip-n3-standing")} stroke={sectorStroke("vip-n3-standing")} strokeWidth={sectorStrokeWidth("vip-n3-standing")} />
-                <text x={67} y={596} textAnchor="middle" fill="white" fontSize={13} fontFamily="Bebas Neue, sans-serif" letterSpacing={2} transform="rotate(-90, 67, 596)">VIP NIVEL 3</text>
-                <text x={67} y={612} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={10} fontFamily="Bebas Neue, sans-serif" letterSpacing={2} transform="rotate(-90, 67, 612)">STANDING</text>
-                <text x={BOX_X + 55} y={698} textAnchor="middle" fill={MAP_SECTORS["vip-n3-standing"].accent} fontSize={7} fontFamily="DM Mono, monospace">$50.000 / persona</text>
+              {/* ════════ VIP NIVEL 3 STANDING (abajo izquierda, con diagonal) ════════ */}
+              <Reservable id="vip-n3-standing" selected={selectedId==="vip-n3-standing"} hovered={hoveredId==="vip-n3-standing"} onSelect={handleSelect} onHover={setHoveredId}>
+                <path d="M 95 720 L 270 720 L 320 770 L 320 930 L 95 930 Z"
+                  fill={fill("vip-n3-standing")} stroke={stroke("vip-n3-standing")} strokeWidth={sw("vip-n3-standing")} />
+                <text x={150} y={828} textAnchor="middle" fill="white" fontSize={15} style={labelStyle} letterSpacing={2} transform="rotate(-90, 150, 828)">VIP NIVEL 3</text>
+                <text x={205} y={912} textAnchor="middle" fill={MAP_SECTORS["vip-n3-standing"].accent} fontSize={7.5} style={monoStyle}>$50.000 / persona</text>
               </Reservable>
 
-              {/* Cabina */}
-              <rect x={132} y={512} width={120} height={80} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.35} />
-              <DecorativeLabel x={192} y={557} lines={["CABINA"]} size={13} />
+              {/* ════════ CABINA (no reservable, centro-abajo) ════════ */}
+              <path d="M 320 770 L 545 770 L 545 855 L 320 855 Z"
+                fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.85} />
+              <text x={432} y={818} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={15} style={labelStyle} letterSpacing={3}>CABINA</text>
 
-              {/* Backstage VIP Nivel 4 */}
-              <Reservable id="backstage" selected={selectedId === "backstage"} hovered={hoveredId === "backstage"} onSelect={handleSelect} onHover={setHoveredId}>
-                <path
-                  d={`M 262 512 H ${BARRA_X - 4} V 708 H 262 Z`}
-                  fill={sectorFill("backstage")}
-                  stroke={sectorStroke("backstage")}
-                  strokeWidth={sectorStrokeWidth("backstage")}
-                  strokeLinejoin="round"
-                />
-                <text x={527} y={602} textAnchor="middle" fill="white" fontSize={16} fontFamily="Bebas Neue, sans-serif" letterSpacing={3}>BACKSTAGE VIP</text>
-                <text x={527} y={622} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} fontFamily="Bebas Neue, sans-serif" letterSpacing={2}>NIVEL 4</text>
-                <text x={527} y={642} textAnchor="middle" fill={MAP_SECTORS.backstage.accent} fontSize={9} fontFamily="DM Mono, monospace">$1.500.000</text>
+              {/* escaleras chiquitas debajo de la pista (las rayas verticales) */}
+              <g stroke="white" strokeWidth={1} strokeOpacity={0.7}>
+                <line x1={556} y1={772} x2={556} y2={830} />
+                <line x1={568} y1={772} x2={568} y2={830} />
+                <line x1={580} y1={772} x2={580} y2={830} />
+              </g>
+
+              {/* ════════ BACKSTAGE VIP NIVEL 4 (trapecio abajo) ════════ */}
+              <Reservable id="backstage" selected={selectedId==="backstage"} hovered={hoveredId==="backstage"} onSelect={handleSelect} onHover={setHoveredId}>
+                <path d="M 320 858 L 600 858 L 600 880 L 560 940 L 320 940 Z"
+                  fill={fill("backstage")} stroke={stroke("backstage")} strokeWidth={sw("backstage")} />
+                <text x={455} y={902} textAnchor="middle" fill="white" fontSize={18} style={labelStyle} letterSpacing={2}>BACKSTAGE VIP</text>
+                <text x={455} y={922} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={labelStyle} letterSpacing={2}>NIVEL 4</text>
+                <text x={455} y={939} textAnchor="middle" fill={MAP_SECTORS.backstage.accent} fontSize={8} style={monoStyle}>$1.500.000</text>
               </Reservable>
-
-              {/* Líneas escaleras abajo */}
-              <StairsMarker x={178} y={506} />
-              <StairsMarker x={360} y={506} />
 
             </svg>
           </div>
         </FadeIn>
 
+        {/* Leyenda */}
         <FadeIn delay={0.2}>
           <div className="mt-8 flex flex-wrap justify-center gap-4 font-mono text-[10px] uppercase tracking-wider text-[#F0F0F0]/50">
             {([
