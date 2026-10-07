@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, DM_Mono } from "next/font/google";
 import "./globals.css";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { SITE_URL } from "@/lib/site";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -16,8 +17,6 @@ const dmMono = DM_Mono({
   variable: "--font-dm-mono",
   display: "swap",
 });
-
-const SITE_URL = "https://bleu-nightclub.vercel.app";
 
 export const metadata: Metadata = {
   title: "BLEU Nightclub",

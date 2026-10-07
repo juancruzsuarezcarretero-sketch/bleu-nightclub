@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
 import { whatsappUrl } from "@/lib/whatsapp";
@@ -38,8 +39,23 @@ export default function Footer() {
           </a>
         </div>
 
-        <p className="mt-8 font-mono text-xs text-[#F0F0F0]/40">
-          © 2025 Bleu Nightclub · Córdoba, Argentina
+        <nav
+          aria-label="Documentos legales"
+          className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-xs"
+        >
+          <Link href="/terminos" className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]">
+            Términos y condiciones
+          </Link>
+          <Link href="/privacidad" className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]">
+            Privacidad
+          </Link>
+          <Link href="/cookies" className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]">
+            Cookies
+          </Link>
+        </nav>
+
+        <p className="mt-6 font-mono text-xs text-[#F0F0F0]/40">
+          © {new Date().getFullYear()} Bleu Nightclub · Córdoba, Argentina
         </p>
         <p className="mt-2 font-mono text-xs text-[#F0F0F0]/30">
           Av. Marcelo T. de Alvear 635
