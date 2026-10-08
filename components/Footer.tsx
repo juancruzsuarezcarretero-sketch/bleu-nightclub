@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
+import { INSTAGRAM_URL } from "@/lib/site";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export default function Footer() {
@@ -15,7 +16,9 @@ export default function Footer() {
 
         <div className="mt-8 flex items-center justify-center gap-6">
           <a
-            href="#"
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             aria-label="Instagram"
             className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]"
           >
@@ -54,7 +57,10 @@ export default function Footer() {
           </Link>
         </nav>
 
-        <p className="mt-6 font-mono text-xs text-[#F0F0F0]/40">
+        <p className="mt-6 font-mono text-xs text-[#F0F0F0]/50">
+          Solo mayores de 18 años · Beber con moderación · Prohibida la venta de alcohol a menores de 18
+        </p>
+        <p className="mt-3 font-mono text-xs text-[#F0F0F0]/40">
           © {new Date().getFullYear()} Bleu Nightclub · Córdoba, Argentina
         </p>
         <p className="mt-2 font-mono text-xs text-[#F0F0F0]/30">

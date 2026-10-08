@@ -60,6 +60,16 @@ export default function Page() {
           local y la legislación vigente. BLEU puede reservarse el derecho de
           admisión en los términos permitidos por la ley.
         </p>
+        <p className="mt-3">
+          El ingreso es exclusivo para mayores de 18 años, con DNI
+          obligatorio. Dress code: elegante sport. La venta y el consumo
+          de alcohol están prohibidos para menores de 18 años; bebé con
+          moderación.
+        </p>
+        <p className="mt-3">
+          Dentro del local se toman fotos y videos con fines de difusión en
+          redes. Si no querés aparecer, avisá al personal.
+        </p>
       </section>
 
       <section>
