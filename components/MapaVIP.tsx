@@ -61,8 +61,8 @@ function Reservable({ id, selected, hovered, onSelect, onHover, children }: Rese
         filter: selected
           ? `drop-shadow(0 0 8px ${config.accent}) drop-shadow(0 0 16px ${config.accent}80)`
           : hovered
-            ? `drop-shadow(0 0 5px ${config.accent}70)`
-            : undefined,
+            ? `drop-shadow(0 0 8px ${config.accent}b0)`
+            : `drop-shadow(0 0 5px ${config.accent}66)`,
         transition: "filter 0.2s",
         pointerEvents: "auto",
       }}
@@ -81,7 +81,7 @@ function Slab({ label, accent, children }: { label: string; accent: string; chil
       style={{ strokeLinejoin: "round", strokeLinecap: "round", pointerEvents: "none" }}
       aria-label={label}
     >
-      <rect x={4} y={4} width={772} height={972} rx={18} fill="rgba(6,6,12,0.55)" stroke={accent} strokeOpacity={0.45} strokeWidth={2} />
+      <rect x={4} y={4} width={772} height={972} rx={18} fill="rgba(6,6,12,0.1)" stroke={accent} strokeOpacity={0.45} strokeWidth={2} />
       <text x={28} y={38} fill={accent} fontSize={22} letterSpacing={4} style={{ fontFamily: "Bebas Neue, sans-serif" }}>
         {label.toUpperCase()}
       </text>
@@ -161,7 +161,7 @@ export default function MapaVIP() {
 
   const fill = (id: MapSectorId) => {
     const c = MAP_SECTORS[id];
-    return (selectedId === id || hoveredId === id) ? c.hoverFill : c.fill;
+    return `${c.accent}${selectedId === id || hoveredId === id ? "a6" : "70"}`;
   };
   const stroke = (id: MapSectorId) => (selectedId === id ? "#FFFFFF" : MAP_SECTORS[id].stroke);
   const sw = (id: MapSectorId) => (selectedId === id ? 2.6 : 1.6);
@@ -180,7 +180,7 @@ export default function MapaVIP() {
     { id: "ultra-box-2", n: "2", y: 450 },
     { id: "ultra-box-3", n: "3", y: 550 },
   ];
-  const UX = 505, UW = 108; // ultra boxes col
+  const UX = 637, UW = 93; // ultra boxes col
 
   const levelContent: React.ReactNode[] = [
     /* ════ PISO 1 ════ */
@@ -188,16 +188,17 @@ export default function MapaVIP() {
       <g role="button" tabIndex={0} aria-label="Pista principal" className="cursor-pointer outline-none" style={{ pointerEvents: "auto" }}
         onClick={() => focusLevel(0)}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); focusLevel(0); } }}>
-        <path d="M 245 350 L 470 350 L 525 405 L 525 655 L 245 655 Z" fill="#08080d" stroke="white" strokeWidth={1.6} strokeOpacity={0.9} />
-        <text x={385} y={490} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={bebas} letterSpacing={3}>PISTA</text>
-        <text x={385} y={514} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={bebas} letterSpacing={3}>PRINCIPAL</text>
-        <text x={385} y={536} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={13} style={bebas} letterSpacing={2}>NIVEL 1</text>
+        <path d="M 198 350 L 470 350 L 525 405 L 525 705 L 245 705 L 198 658 Z" fill="#08080d" stroke="white" strokeWidth={1.6} strokeOpacity={0.9} />
+        <text x={365} y={490} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={bebas} letterSpacing={3}>PISTA</text>
+        <text x={365} y={514} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={bebas} letterSpacing={3}>PRINCIPAL</text>
+        <text x={365} y={536} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={13} style={bebas} letterSpacing={2}>NIVEL 1</text>
       </g>
+      {[358, 367, 376, 385].map((yy) => (
+        <line key={yy} x1={205} y1={yy} x2={245} y2={yy} stroke="white" strokeWidth={1} strokeOpacity={0.7} />
+      ))}
       <path d="M 245 705 L 510 705 L 510 800 L 245 800 Z" fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.9} />
       <text x={377} y={757} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={15} style={bebas} letterSpacing={3}>CABINA</text>
-      <rect x={625} y={745} width={45} height={150} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.9} />
-      <text x={647} y={820} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={bebas} letterSpacing={2} transform="rotate(90, 647, 820)">BARRA</text>
-    </>,
+</>,
 
     /* ════ SEGUNDO PISO: ENTREPISO + GOLDEN ════ */
     <>
@@ -205,14 +206,14 @@ export default function MapaVIP() {
       <text x={240} y={100} textAnchor="middle" fill="white" fontSize={17} style={bebas} letterSpacing={2}>BARRA</text>
       <text x={240} y={122} textAnchor="middle" fill="white" fontSize={17} style={bebas} letterSpacing={2}>CAÑADA</text>
       {R("golden", <>
-        <path d="M 345 50 L 665 50 L 665 490 L 615 490 L 615 165 L 345 165 Z" fill={fill("golden")} stroke={stroke("golden")} strokeWidth={sw("golden")} />
-        <text x={560} y={92} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={3}>GOLDEN</text>
-        <text x={560} y={112} textAnchor="middle" fill={MAP_SECTORS.golden.accent} fontSize={10} style={mono}>$35.000 / persona</text>
+        <path d="M 345 50 L 730 50 L 730 350 L 650 350 L 650 165 L 345 165 Z" fill={fill("golden")} stroke={stroke("golden")} strokeWidth={sw("golden")} />
+        <text x={537} y={92} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={3}>GOLDEN</text>
+        <text x={537} y={112} textAnchor="middle" fill={MAP_SECTORS.golden.accent} fontSize={10} style={mono}>$35.000 / persona</text>
         <Couch x={360} y={62} w={42} color={MAP_SECTORS.golden.accent} />
         <Couch x={412} y={62} w={42} color={MAP_SECTORS.golden.accent} />
-        <Couch x={622} y={200} w={38} color={MAP_SECTORS.golden.accent} />
-        <Couch x={622} y={300} w={38} color={MAP_SECTORS.golden.accent} />
-        <Couch x={622} y={400} w={38} color={MAP_SECTORS.golden.accent} />
+        <Couch x={671} y={185} w={38} color={MAP_SECTORS.golden.accent} />
+        <Couch x={671} y={245} w={38} color={MAP_SECTORS.golden.accent} />
+        <Couch x={671} y={305} w={38} color={MAP_SECTORS.golden.accent} />
       </>)}
       <text x={300} y={250} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={16} style={bebas} letterSpacing={3}>ENTREPISO</text>
       {[300, 310, 320, 330].map((yy, i) => (
@@ -234,9 +235,6 @@ export default function MapaVIP() {
           <text x={bx + 34} y={y + 48} textAnchor="middle" fill={config.accent} fontSize={7} style={mono}>$700.000</text>
         </>);
       })}
-      {[358, 367, 376, 385].map((yy) => (
-        <line key={yy} x1={205} y1={yy} x2={245} y2={yy} stroke="white" strokeWidth={1} strokeOpacity={0.7} />
-      ))}
       {R("vip-n3-standing", <>
         <path d="M 70 655 L 195 655 L 245 705 L 245 905 L 70 905 Z" fill={fill("vip-n3-standing")} stroke={stroke("vip-n3-standing")} strokeWidth={sw("vip-n3-standing")} />
         <text x={140} y={800} textAnchor="middle" fill="white" fontSize={15} style={bebas} letterSpacing={2} transform="rotate(-90, 140, 800)">VIP NIVEL 3</text>
@@ -249,23 +247,26 @@ export default function MapaVIP() {
       {ultraBoxes.map(({ id, n, y }) =>
         R(id, <>
           <rect x={UX} y={y} width={UW} height={92} fill={fill(id)} stroke={stroke(id)} strokeWidth={sw(id)} />
-          <text x={UX + 32} y={y + 42} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>BOX</text>
-          <text x={UX + 58} y={y + 42} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>{n}</text>
-          <Couch x={UX + UW - 42} y={y + 26} w={36} h={40} color={MAP_SECTORS[id].accent} />
+          <text x={UX + 26} y={y + 42} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>BOX</text>
+          <text x={UX + 46} y={y + 42} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>{n}</text>
+          <Couch x={UX + UW - 36} y={y + 26} w={30} h={40} color={MAP_SECTORS[id].accent} />
         </>)
       )}
-      <text x={690} y={445} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 690, 445)">PALCO 2</text>
-      <text x={690} y={595} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 690, 595)">PALCO 3</text>
+      <text x={752} y={445} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 752, 445)">PALCO 2</text>
+      <text x={752} y={595} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 752, 595)">PALCO 3</text>
       {R("ultra-standing", <>
-        <path d="M 505 646 L 613 646 L 613 740 L 525 740 L 505 720 Z" fill={fill("ultra-standing")} stroke={stroke("ultra-standing")} strokeWidth={sw("ultra-standing")} />
-        <text x={559} y={688} textAnchor="middle" fill="white" fontSize={10} style={bebas} letterSpacing={1}>ULTRA STANDING</text>
-        <text x={559} y={702} textAnchor="middle" fill={MAP_SECTORS["ultra-standing"].accent} fontSize={7} style={mono}>$100.000 / p.</text>
+        <path d="M 637 646 L 730 646 L 730 905 L 557 905 L 557 803 L 637 803 Z" fill={fill("ultra-standing")} stroke={stroke("ultra-standing")} strokeWidth={sw("ultra-standing")} />
+        <text x={683} y={685} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>ULTRA</text>
+        <text x={683} y={701} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>STANDING</text>
+        <text x={683} y={718} textAnchor="middle" fill={MAP_SECTORS["ultra-standing"].accent} fontSize={8} style={mono}>$100.000 / p.</text>
+        <rect x={685} y={745} width={40} height={150} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.9} />
+        <text x={705} y={820} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={bebas} letterSpacing={2} transform="rotate(90, 705, 820)">BARRA</text>
       </>)}
       {[520, 530, 540].map((xx) => (
         <line key={xx} x1={xx} y1={745} x2={xx} y2={800} stroke="white" strokeWidth={1} strokeOpacity={0.7} />
       ))}
       {R("backstage", <>
-        <path d="M 245 803 L 560 803 L 560 835 L 505 905 L 245 905 Z" fill={fill("backstage")} stroke={stroke("backstage")} strokeWidth={sw("backstage")} />
+        <path d="M 245 803 L 557 803 L 557 905 L 245 905 Z" fill={fill("backstage")} stroke={stroke("backstage")} strokeWidth={sw("backstage")} />
         <text x={400} y={850} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={2}>BACKSTAGE VIP</text>
         <text x={400} y={870} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={bebas} letterSpacing={2}>NIVEL 4</text>
         <text x={400} y={888} textAnchor="middle" fill={MAP_SECTORS.backstage.accent} fontSize={8} style={mono}>$1.500.000</text>
