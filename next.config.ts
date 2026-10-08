@@ -8,6 +8,7 @@ const ContentSecurityPolicy = [
   "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com",
   "media-src 'self' https://assets.mixkit.co",
   "connect-src 'self'",
+  "frame-src https://www.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -25,6 +26,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1", "100.85.169.8"],
   images: {
     remotePatterns: [
       {

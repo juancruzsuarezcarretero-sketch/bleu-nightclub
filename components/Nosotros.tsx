@@ -4,6 +4,11 @@ import { MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/SocialIcons";
 import { FadeIn } from "@/components/FadeIn";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { SITE_ADDRESS } from "@/lib/site";
+
+const MAP_QUERY = encodeURIComponent(
+  `${SITE_ADDRESS.street}, ${SITE_ADDRESS.city}, Argentina`
+);
 
 const photos = [
   "https://images.unsplash.com/photo-1566737238500-ac588a25a0a8?w=600&h=400&fit=crop",
@@ -40,6 +45,10 @@ export default function Nosotros() {
               <p>
                 <span className="text-[#00AAFF]">Dirección:</span> Av. Marcelo
                 T. de Alvear 635, Córdoba
+              </p>
+              <p>
+                <span className="text-[#00AAFF]">Ingreso:</span> +18 · DNI
+                obligatorio · Dress code elegante sport
               </p>
             </div>
             <div className="mt-8 flex gap-4">
@@ -83,6 +92,26 @@ export default function Nosotros() {
             </div>
           </FadeIn>
         </div>
+
+        <FadeIn delay={0.15}>
+          <div className="overflow-hidden rounded-lg border border-white/10">
+            <iframe
+              title="Mapa: cómo llegar a BLEU Nightclub"
+              src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="h-[320px] w-full border-0 opacity-80 [filter:invert(90%)_hue-rotate(180deg)_contrast(0.9)] sm:h-[400px]"
+            />
+          </div>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${MAP_QUERY}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block font-mono text-xs text-[#00AAFF] transition-colors hover:text-[#F0F0F0]"
+          >
+            Cómo llegar →
+          </a>
+        </FadeIn>
 
         <FadeIn delay={0.2}>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

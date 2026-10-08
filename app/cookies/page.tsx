@@ -35,7 +35,7 @@ export default function Page() {
         <h2>Servicios de terceros</h2>
         <p>
           Las imágenes y videos que se cargan desde otros servicios (por
-          ejemplo Unsplash o Mixkit), y el hosting en Vercel, pueden registrar
+          ejemplo Unsplash o Mixkit), el mapa de Google Maps de la sección Nosotros (que puede usar cookies propias de Google) y el hosting en Vercel, pueden registrar
           datos técnicos de la conexión como la dirección IP. Más detalles en la{" "}
           <Link href="/privacidad">política de privacidad</Link>.
         </p>
