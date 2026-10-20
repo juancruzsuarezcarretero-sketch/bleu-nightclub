@@ -122,28 +122,8 @@ export default function Hero() {
   const animateTitle = mounted && !reduceMotion;
 
   return (
-    <section className="relative flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden bg-[#050508]">
-      <div className="absolute inset-0 z-0 bg-[#050508]">
-        <div
-          className="absolute inset-0 bg-[#050508]"
-          aria-hidden="true"
-        />
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="none"
-          className="h-full w-full object-cover opacity-40"
-          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect fill='%23050508' width='1920' height='1080'/%3E%3C/svg%3E"
-        >
-          <source
-            src="https://assets.mixkit.co/videos/preview/mixkit-crowd-of-people-at-a-nightclub-4630-large.mp4"
-            type="video/mp4"
-          />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050508]/80 via-[#050508]/50 to-[#050508]" />
-      </div>
+    <section className="relative flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#050508]/70 via-[#050508]/30 to-transparent" />
 
       {mounted && <ParticleCanvas />}
 

@@ -142,7 +142,7 @@ export default function Contacto() {
   const themeStyles = selection ? SELECTION_THEME_STYLES[selection.theme] : null;
 
   return (
-    <section ref={sectionRef} id="contacto" className="min-h-[480px] bg-[#050508] py-24 px-4 sm:px-6 lg:px-8">
+    <section ref={sectionRef} id="contacto" className="min-h-[480px] bg-[#050508]/80 py-24 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <FadeIn>
           <h2 className="mb-12 font-bebas text-4xl tracking-wider text-[#F0F0F0] sm:text-5xl md:text-6xl">HABLEMOS</h2>

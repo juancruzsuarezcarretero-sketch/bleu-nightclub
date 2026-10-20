@@ -92,7 +92,7 @@ export default function Eventos() {
   return (
     <section
       id="eventos"
-      className="min-h-[480px] bg-[#050508] py-24 px-4 sm:px-6 lg:px-8"
+      className="min-h-[480px] bg-[#050508]/80 py-24 px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-7xl">
         <FadeIn>

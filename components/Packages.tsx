@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Check } from "lucide-react";
 import { FadeIn } from "@/components/FadeIn";
 import type { PackageId } from "@/lib/whatsapp";
@@ -86,13 +87,20 @@ const packages: {
 
 export default function Packages() {
   const { startReservation } = useReservation();
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const scrollByCard = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: "smooth" });
+  };
 
   const handleReserve = (packageId: PackageId) => {
     startReservation(reservationFromPackage(packageId));
   };
 
   return (
-    <section className="min-h-[480px] bg-[#050508] py-24 px-4 sm:px-6 lg:px-8">
+    <section className="min-h-[480px] bg-[#050508]/80 py-24 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <FadeIn>
           <h2 className="mb-12 font-bebas text-4xl tracking-wider text-[#F0F0F0] sm:text-5xl md:text-6xl">
@@ -100,12 +108,33 @@ export default function Packages() {
           </h2>
         </FadeIn>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 xl:grid-cols-5 lg:overflow-visible">
+        <div className="relative -mx-4 sm:-mx-6 lg:-mx-8">
+        {(["prev", "next"] as const).map((side) => (
+          <button
+            key={side}
+            type="button"
+            aria-label={side === "prev" ? "Anterior" : "Siguiente"}
+            onClick={() => scrollByCard(side === "prev" ? -1 : 1)}
+            className={`group/arrow absolute inset-y-0 z-10 hidden w-24 items-center text-[#F0F0F0]/70 transition hover:text-white sm:flex lg:w-32 ${
+              side === "prev"
+                ? "left-0 justify-start bg-gradient-to-r from-[#050508]/80 to-transparent pl-3"
+                : "right-0 justify-end bg-gradient-to-l from-[#050508]/80 to-transparent pr-3"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="h-16 w-16 drop-shadow-[0_0_12px_rgba(0,102,255,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+              <path d={side === "prev" ? "M15 4l-8 8 8 8" : "M9 4l8 8-8 8"} />
+            </svg>
+          </button>
+        ))}
+        <div
+          ref={scrollerRef}
+          className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pt-4 pb-4 scroll-px-4 sm:px-6 sm:scroll-px-6 lg:px-8 lg:scroll-px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {packages.map((pkg, index) => (
             <FadeIn
               key={pkg.id}
               delay={index * 0.08}
-              className="min-w-[280px] flex-shrink-0 snap-center lg:min-w-0"
+              className="w-[280px] flex-shrink-0 snap-start"
             >
               <article
                 className={`glass-card relative flex h-full flex-col rounded-xl border p-6 transition-all duration-300 ${pkg.accent} ${pkg.glow}`}
@@ -152,6 +181,7 @@ export default function Packages() {
               </article>
             </FadeIn>
           ))}
+        </div>
         </div>
       </div>
     </section>

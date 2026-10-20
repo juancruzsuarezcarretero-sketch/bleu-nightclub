@@ -8,7 +8,7 @@ import { whatsappUrl } from "@/lib/whatsapp";
 
 export default function Footer() {
   return (
-    <footer className="min-h-[200px] border-t border-white/5 bg-[#050508] py-16 px-4 sm:px-6 lg:px-8">
+    <footer className="relative z-10 min-h-[200px] border-t border-white/5 bg-[#050508]/80 py-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl text-center">
         <p className="font-bebas text-5xl tracking-[0.3em] text-[#F0F0F0] sm:text-6xl">
           BLEU

@@ -67,7 +67,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "box-1": {
     id: "box-1",
-    name: "Box 1",
+    name: "Box 5",
     type: "mesa",
     fixedPrice: 700000,
     maxCapacity: 10,
@@ -82,7 +82,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "box-2": {
     id: "box-2",
-    name: "Box 2",
+    name: "Box 6",
     type: "mesa",
     fixedPrice: 700000,
     maxCapacity: 10,
@@ -97,7 +97,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "box-3": {
     id: "box-3",
-    name: "Box 3",
+    name: "Box 7",
     type: "mesa",
     fixedPrice: 700000,
     maxCapacity: 10,
@@ -112,7 +112,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "box-4": {
     id: "box-4",
-    name: "Box 4",
+    name: "Box 8",
     type: "mesa",
     fixedPrice: 700000,
     maxCapacity: 10,
@@ -127,7 +127,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "box-5": {
     id: "box-5",
-    name: "Box 5",
+    name: "Box 9",
     type: "mesa",
     fixedPrice: 700000,
     maxCapacity: 10,
@@ -156,7 +156,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-1": {
     id: "ultra-box-1",
-    name: "Ultra Box 1 — Palco 2",
+    name: "Ultra Box 2 — Palco 2",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,
@@ -171,7 +171,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-2": {
     id: "ultra-box-2",
-    name: "Ultra Box 2 — Palco 2",
+    name: "Ultra Box 3 — Palco 2",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,
@@ -186,7 +186,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-3": {
     id: "ultra-box-3",
-    name: "Ultra Box 3 — Palco 3",
+    name: "Ultra Box 4 — Palco 3",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,

@@ -16,6 +16,10 @@ import { MAP_LEVELS, levelOfSector } from "@/lib/map-levels";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const PEEK = 0.8; // fracción del ancho/alto del piso que se corre cada vecino al enfocar otro: solo asoma una esquina
+const PEEK_TILT = 9; // inclinación (grados) de los pisos vecinos
+const GHOST_FILL = "rgba(255,255,255,0.07)";
+const GHOST_STROKE = "rgba(255,255,255,0.28)";
 const GAP = 110; // separación en Z entre pisos (px) cuando el mapa está expandido
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const prefersReducedMotion = () =>
@@ -30,6 +34,24 @@ function Couch({ x, y, w = 40, h = 32, color }: { x: number; y: number; w?: numb
       <line x1={s} y1={4} x2={s} y2={h - 4} />
       <line x1={s * 2} y1={4} x2={s * 2} y2={h - 4} />
       <line x1={4} y1={h / 2} x2={w - 4} y2={h / 2} />
+    </g>
+  );
+}
+
+/* Escalera clickable: lleva al piso indicado */
+function Stairs({ label, onGo, box, children }: { label: string; onGo: () => void; box: { x: number; y: number; w: number; h: number }; children: React.ReactNode }) {
+  return (
+    <g
+      role="button"
+      tabIndex={0}
+      aria-label={label}
+      className="cursor-pointer outline-none"
+      style={{ pointerEvents: "auto" }}
+      onClick={onGo}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onGo(); } }}
+    >
+      <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="transparent" />
+      {children}
     </g>
   );
 }
@@ -110,7 +132,18 @@ export default function MapaVIP() {
     gsap.set(rigRef.current, { rotateX: mix(mix(76, 58, p), 46, f), scale: mix(mix(0.72, 1, p), 0.92, f), y: p * (1 - f) * GAP * 0.6 });
     gsap.set(spinRef.current, { rotateZ: mix(mix(-6, -30, p), 0, f) });
     gsap.set(worldRef.current, { z: -idx * GAP * p * f });
-    wrapRefs.current.forEach((el, i) => el && gsap.set(el, { z: i * GAP * p }));
+    const w = sceneRef.current?.clientWidth ?? 600;
+    const h = (w * 880) / 780;
+    wrapRefs.current.forEach((el, i) => {
+      if (!el) return;
+      const d = i - idx; // + arriba (esquina superior derecha), - abajo (esquina inferior izquierda)
+      gsap.set(el, {
+        z: i * GAP * p,
+        x: Math.sign(d) * (Math.abs(d) * 0.1 + PEEK) * w * f,
+        y: -Math.sign(d) * (Math.abs(d) * 0.1 + PEEK) * h * f,
+        rotateZ: Math.sign(d) * PEEK_TILT * f,
+      });
+    });
   }, []);
 
   // Parallax de scroll: el mapa se despliega al entrar en pantalla
@@ -142,7 +175,7 @@ export default function MapaVIP() {
     if (focus !== null) cam.current.idx = focus;
     gsap.to(cam.current, { f: focus === null ? 0 : 1, duration: d, ease: "power3.inOut", overwrite: "auto", onUpdate: render });
     innerRefs.current.forEach((el, i) => {
-      if (el) gsap.to(el, { opacity: focus === null || focus === i ? 1 : 0.05, duration: d * 0.6 });
+      if (el) gsap.to(el, { opacity: focus === null || focus === i ? 1 : 0.22, duration: d * 0.6 });
     });
   }, [focus, render]);
 
@@ -155,56 +188,74 @@ export default function MapaVIP() {
   const handleSelect = useCallback((id: MapSectorId) => {
     setSelectedId(id);
     setFocus(levelOfSector(id));
+    setPanelOpen(true);
   }, []);
 
   const panelSelection: MapSectorSelection | null = selectedId ? { sectorId: selectedId } : null;
 
+  // Modo fantasma: los sectores de los otros pisos se dibujan en gris; el seleccionado conserva color y brillo
+  let ghost = false;
+  const lit = (id: MapSectorId) => selectedId === id;
   const fill = (id: MapSectorId) => {
     const c = MAP_SECTORS[id];
-    return `${c.accent}${selectedId === id || hoveredId === id ? "a6" : "70"}`;
+    if (ghost) return lit(id) ? `${c.accent}70` : GHOST_FILL;
+    return `${c.accent}${lit(id) || hoveredId === id ? "a6" : "70"}`;
   };
-  const stroke = (id: MapSectorId) => (selectedId === id ? "#FFFFFF" : MAP_SECTORS[id].stroke);
-  const sw = (id: MapSectorId) => (selectedId === id ? 2.6 : 1.6);
-  const R = (id: MapSectorId, children: React.ReactNode) => (
-    <Reservable key={id} id={id} selected={selectedId === id} hovered={hoveredId === id} onSelect={handleSelect} onHover={setHoveredId}>
-      {children}
-    </Reservable>
-  );
+  const stroke = (id: MapSectorId) => (ghost && !lit(id) ? GHOST_STROKE : lit(id) ? "#FFFFFF" : MAP_SECTORS[id].stroke);
+  const sw = (id: MapSectorId) => (ghost ? 1.2 : lit(id) ? 2.6 : 1.6);
+  const N = (children: React.ReactNode) => (ghost ? null : children);
+  const R = (id: MapSectorId, children: React.ReactNode) =>
+    ghost ? (
+      <g
+        key={id}
+        className="[&>*:not(:first-child)]:hidden"
+        style={{ pointerEvents: "none", filter: lit(id) ? `drop-shadow(0 0 8px ${MAP_SECTORS[id].accent}) drop-shadow(0 0 16px ${MAP_SECTORS[id].accent}80)` : undefined }}
+      >
+        {children}
+      </g>
+    ) : (
+      <Reservable key={id} id={id} selected={lit(id)} hovered={hoveredId === id} onSelect={handleSelect} onHover={setHoveredId}>
+        {children}
+      </Reservable>
+    );
 
   const bebas = { fontFamily: "Bebas Neue, sans-serif" } as const;
   const mono = { fontFamily: "DM Mono, monospace" } as const;
 
   const boxVip: MapSectorId[] = ["box-1", "box-2", "box-3", "box-4", "box-5"];
   const ultraBoxes: { id: MapSectorId; n: string; y: number }[] = [
-    { id: "ultra-box-1", n: "1", y: 350 },
-    { id: "ultra-box-2", n: "2", y: 450 },
-    { id: "ultra-box-3", n: "3", y: 550 },
+    { id: "ultra-box-1", n: "2", y: 350 },
+    { id: "ultra-box-2", n: "3", y: 450 },
+    { id: "ultra-box-3", n: "4", y: 550 },
   ];
   const UX = 637, UW = 93; // ultra boxes col
 
-  const levelContent: React.ReactNode[] = [
+  const buildLevels = (): React.ReactNode[] => [
     /* ════ PISO 1 ════ */
     <>
-      <g role="button" tabIndex={0} aria-label="Pista principal" className="cursor-pointer outline-none" style={{ pointerEvents: "auto" }}
+      {ghost && <path d="M 198 350 L 470 350 L 525 405 L 525 705 L 245 705 L 198 658 Z" fill={GHOST_FILL} stroke={GHOST_STROKE} strokeWidth={1.2} />}
+      {N(<g role="button" tabIndex={0} aria-label="Pista principal" className="cursor-pointer outline-none" style={{ pointerEvents: "auto" }}
         onClick={() => focusLevel(0)}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); focusLevel(0); } }}>
         <path d="M 198 350 L 470 350 L 525 405 L 525 705 L 245 705 L 198 658 Z" fill="#08080d" stroke="white" strokeWidth={1.6} strokeOpacity={0.9} />
         <text x={365} y={490} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={bebas} letterSpacing={3}>PISTA</text>
         <text x={365} y={514} textAnchor="middle" fill="white" fillOpacity={0.9} fontSize={20} style={bebas} letterSpacing={3}>PRINCIPAL</text>
         <text x={365} y={536} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={13} style={bebas} letterSpacing={2}>NIVEL 1</text>
-      </g>
-      {[358, 367, 376, 385].map((yy) => (
-        <line key={yy} x1={205} y1={yy} x2={245} y2={yy} stroke="white" strokeWidth={1} strokeOpacity={0.7} />
-      ))}
-      <path d="M 245 705 L 510 705 L 510 800 L 245 800 Z" fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.9} />
-      <text x={377} y={757} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={15} style={bebas} letterSpacing={3}>CABINA</text>
+      </g>)}
+      {N(<Stairs label="Escalera al piso 2" onGo={() => focusLevel(1)} box={{ x: 200, y: 350, w: 50, h: 42 }}>
+        {[358, 367, 376, 385].map((yy) => (
+          <line key={yy} x1={205} y1={yy} x2={245} y2={yy} stroke="white" strokeWidth={1} strokeOpacity={0.7} />
+        ))}
+      </Stairs>)}
 </>,
 
     /* ════ SEGUNDO PISO: ENTREPISO + GOLDEN ════ */
     <>
-      <path d="M 150 50 L 340 50 L 340 165 L 95 165 L 150 50 Z" fill="#0a0a0e" stroke="white" strokeWidth={1.6} strokeOpacity={0.9} />
-      <text x={240} y={100} textAnchor="middle" fill="white" fontSize={17} style={bebas} letterSpacing={2}>BARRA</text>
-      <text x={240} y={122} textAnchor="middle" fill="white" fontSize={17} style={bebas} letterSpacing={2}>CAÑADA</text>
+      {N(<>
+        <path d="M 150 50 L 340 50 L 340 165 L 95 165 L 150 50 Z" fill="#0a0a0e" stroke="white" strokeWidth={1.6} strokeOpacity={0.9} />
+        <text x={240} y={100} textAnchor="middle" fill="white" fontSize={17} style={bebas} letterSpacing={2}>BARRA</text>
+        <text x={240} y={122} textAnchor="middle" fill="white" fontSize={17} style={bebas} letterSpacing={2}>CAÑADA</text>
+      </>)}
       {R("golden", <>
         <path d="M 345 50 L 730 50 L 730 350 L 650 350 L 650 165 L 345 165 Z" fill={fill("golden")} stroke={stroke("golden")} strokeWidth={sw("golden")} />
         <text x={537} y={92} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={3}>GOLDEN</text>
@@ -215,17 +266,24 @@ export default function MapaVIP() {
         <Couch x={671} y={245} w={38} color={MAP_SECTORS.golden.accent} />
         <Couch x={671} y={305} w={38} color={MAP_SECTORS.golden.accent} />
       </>)}
-      <text x={300} y={250} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={16} style={bebas} letterSpacing={3}>ENTREPISO</text>
-      {[300, 310, 320, 330].map((yy, i) => (
-        <line key={yy} x1={70 + i * 4} y1={yy} x2={200} y2={yy} stroke="white" strokeWidth={1.2} strokeOpacity={0.85} />
-      ))}
+      {N(<>
+        <text x={300} y={250} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={16} style={bebas} letterSpacing={3}>ENTREPISO</text>
+        <Stairs label="Escalera al piso 3" onGo={() => focusLevel(2)} box={{ x: 60, y: 292, w: 145, h: 46 }}>
+          {[300, 310, 320, 330].map((yy, i) => (
+            <line key={yy} x1={82 - i * 4} y1={yy} x2={200} y2={yy} stroke="white" strokeWidth={1.2} strokeOpacity={0.85} />
+          ))}
+        </Stairs>
+      </>)}
     </>,
 
     /* ════ TERCER PISO: BOX AZULES + VIP NIVEL 3 ════ */
     <>
+      {N([300, 310, 320, 330].map((yy, i) => (
+        <line key={yy} x1={82 - i * 4} y1={yy} x2={200} y2={yy} stroke="white" strokeWidth={1.2} strokeOpacity={0.85} />
+      )))}
       {boxVip.map((id, i) => {
         const config = MAP_SECTORS[id];
-        const num = id.replace("box-", "");
+        const num = String(i + 5);
         const y = 350 + i * 66;
         const bx = 70, bw = 128, bh = 60;
         return R(id, <>
@@ -236,7 +294,7 @@ export default function MapaVIP() {
         </>);
       })}
       {R("vip-n3-standing", <>
-        <path d="M 70 655 L 195 655 L 245 705 L 245 905 L 70 905 Z" fill={fill("vip-n3-standing")} stroke={stroke("vip-n3-standing")} strokeWidth={sw("vip-n3-standing")} />
+        <path d="M 70 680 L 220 680 L 245 705 L 245 905 L 70 905 Z" fill={fill("vip-n3-standing")} stroke={stroke("vip-n3-standing")} strokeWidth={sw("vip-n3-standing")} />
         <text x={140} y={800} textAnchor="middle" fill="white" fontSize={15} style={bebas} letterSpacing={2} transform="rotate(-90, 140, 800)">VIP NIVEL 3</text>
         <text x={180} y={888} textAnchor="middle" fill={MAP_SECTORS["vip-n3-standing"].accent} fontSize={7.5} style={mono}>$50.000 / persona</text>
       </>)}
@@ -252,8 +310,10 @@ export default function MapaVIP() {
           <Couch x={UX + UW - 36} y={y + 26} w={30} h={40} color={MAP_SECTORS[id].accent} />
         </>)
       )}
-      <text x={752} y={445} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 752, 445)">PALCO 2</text>
-      <text x={752} y={595} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 752, 595)">PALCO 3</text>
+      {N(<>
+        <text x={752} y={445} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 752, 445)">PALCO 2</text>
+        <text x={752} y={595} textAnchor="middle" fill="white" fillOpacity={0.6} fontSize={11} style={bebas} letterSpacing={2} transform="rotate(90, 752, 595)">PALCO 3</text>
+      </>)}
       {R("ultra-standing", <>
         <path d="M 637 646 L 730 646 L 730 905 L 557 905 L 557 803 L 637 803 Z" fill={fill("ultra-standing")} stroke={stroke("ultra-standing")} strokeWidth={sw("ultra-standing")} />
         <text x={683} y={685} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>ULTRA</text>
@@ -262,9 +322,11 @@ export default function MapaVIP() {
         <rect x={685} y={745} width={40} height={150} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.9} />
         <text x={705} y={820} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={bebas} letterSpacing={2} transform="rotate(90, 705, 820)">BARRA</text>
       </>)}
-      {[520, 530, 540].map((xx) => (
+      <path d="M 245 705 L 510 705 L 510 800 L 245 800 Z" fill={ghost ? GHOST_FILL : "#0a0a0e"} stroke={ghost ? GHOST_STROKE : "white"} strokeWidth={ghost ? 1.2 : 1.5} strokeOpacity={ghost ? 1 : 0.9} />
+      {N(<text x={377} y={757} textAnchor="middle" fill="white" fillOpacity={0.85} fontSize={15} style={bebas} letterSpacing={3}>CABINA</text>)}
+      {N([520, 530, 540].map((xx) => (
         <line key={xx} x1={xx} y1={745} x2={xx} y2={800} stroke="white" strokeWidth={1} strokeOpacity={0.7} />
-      ))}
+      )))}
       {R("backstage", <>
         <path d="M 245 803 L 557 803 L 557 905 L 245 905 Z" fill={fill("backstage")} stroke={stroke("backstage")} strokeWidth={sw("backstage")} />
         <text x={400} y={850} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={2}>BACKSTAGE VIP</text>
@@ -274,11 +336,23 @@ export default function MapaVIP() {
     </>,
   ];
 
+  ghost = true;
+  const ghostLevels = buildLevels();
+  ghost = false;
+  const ownLevels = buildLevels();
+  // Cada piso muestra en gris los sectores de los demás, en su misma posición
+  const levelContent = ownLevels.map((own, i) => (
+    <>
+      {ghostLevels.map((g, j) => j !== i && <g key={j}>{g}</g>)}
+      {own}
+    </>
+  ));
+
   const level = focus !== null ? MAP_LEVELS[focus] : null;
   const sector = selectedId ? MAP_SECTORS[selectedId] : null;
 
   return (
-    <section id="reservas" className="relative overflow-hidden bg-[#050508] py-24 md:py-32">
+    <section id="reservas" className="relative overflow-hidden bg-[#050508]/80 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="mb-12 text-center">
@@ -294,9 +368,46 @@ export default function MapaVIP() {
           {/* Escena 3D */}
           <div
             ref={sceneRef}
-            className="relative mx-auto aspect-[780/880] w-full max-w-[600px] rounded-xl bg-[radial-gradient(ellipse_at_center,rgba(0,102,255,0.10),transparent_65%)]"
+            className="relative mx-auto aspect-[780/880] w-full max-w-[600px] rounded-xl bg-[radial-gradient(ellipse_at_center,rgba(0,102,255,0.10),transparent_65%)] [clip-path:inset(-50%_-100%_-50%_-100%)]"
             style={{ perspective: "1800px" }}
           >
+            {/* Navegación entre pisos: costado, a media altura */}
+            <nav aria-label="Pisos" className="absolute -left-2 top-1/2 z-20 lg:-left-14 flex -translate-y-1/2 flex-col items-center gap-2">
+              <button
+                type="button"
+                aria-label="Piso siguiente"
+                disabled={focus === null || focus >= MAP_LEVELS.length - 1}
+                onClick={() => focus !== null && focusLevel(focus + 1)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/60 text-[#F0F0F0]/70 backdrop-blur transition hover:text-white disabled:opacity-30"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 15l7-7 7 7" /></svg>
+              </button>
+              {[...MAP_LEVELS].reverse().map((lv) => {
+                const active = focus === lv.index;
+                return (
+                  <button
+                    key={lv.index}
+                    type="button"
+                    aria-label={`${lv.label} · ${lv.name}`}
+                    aria-pressed={active}
+                    onClick={() => focusLevel(active ? null : lv.index)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border bg-black/60 font-bebas text-lg text-[#F0F0F0] backdrop-blur transition"
+                    style={{ borderColor: active ? lv.accent : "rgba(255,255,255,0.15)", backgroundColor: active ? `${lv.accent}40` : undefined }}
+                  >
+                    {lv.index + 1}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                aria-label="Piso anterior"
+                disabled={focus === null || focus <= 0}
+                onClick={() => focus !== null && focusLevel(focus - 1)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/60 text-[#F0F0F0]/70 backdrop-blur transition hover:text-white disabled:opacity-30"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 9l7 7 7-7" /></svg>
+              </button>
+            </nav>
             <div ref={rigRef} className="pointer-events-none absolute inset-0 [transform-style:preserve-3d]">
               <div ref={spinRef} className="pointer-events-none absolute inset-0 [transform-style:preserve-3d]">
                 <div ref={worldRef} className="pointer-events-none absolute inset-0 [transform-style:preserve-3d]">
@@ -313,6 +424,15 @@ export default function MapaVIP() {
                       >
                         <Slab label={`${lv.label} · ${lv.name}`} accent={lv.accent}>{levelContent[i]}</Slab>
                       </div>
+                      {focus !== null && focus !== i && (
+                        <button
+                          type="button"
+                          aria-label={`Ir a ${lv.label}`}
+                          onClick={() => focusLevel(i)}
+                          className="pointer-events-auto absolute inset-0 cursor-pointer rounded-xl"
+                          style={{ transform: "translateZ(1px)" }}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>

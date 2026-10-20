@@ -316,15 +316,12 @@ export default function NuestrasNoches() {
   };
 
   return (
-    <section
-      id="galeria"
-      className="min-h-[480px] bg-[#050508] py-24 px-4 sm:px-6 lg:px-8"
-    >
-      <div className="mx-auto max-w-7xl">
+    <div>
+      <div>
         <FadeIn>
-          <h2 className="mb-4 font-bebas text-4xl tracking-wider text-[#F0F0F0] sm:text-5xl md:text-6xl">
+          <h3 className="mb-4 font-bebas text-3xl tracking-wider text-[#F0F0F0] sm:text-4xl">
             NUESTRAS NOCHES
-          </h2>
+          </h3>
           <p className="mb-12 font-mono text-xs text-[#F0F0F0]/50">
             Reviví las mejores noches de Bleu
           </p>
@@ -368,6 +365,6 @@ export default function NuestrasNoches() {
           />
         )}
       </AnimatePresence>
-    </section>
+    </div>
   );
 }

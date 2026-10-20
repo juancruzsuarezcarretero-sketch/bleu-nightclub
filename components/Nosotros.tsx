@@ -1,8 +1,8 @@
 "use client";
-import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/SocialIcons";
 import { FadeIn } from "@/components/FadeIn";
+import NuestrasNoches from "@/components/NuestrasNoches";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { SITE_ADDRESS } from "@/lib/site";
 
@@ -10,18 +10,11 @@ const MAP_QUERY = encodeURIComponent(
   `${SITE_ADDRESS.street}, ${SITE_ADDRESS.city}, Argentina`
 );
 
-const photos = [
-  "https://images.unsplash.com/photo-1566737238500-ac588a25a0a8?w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50c?w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1429962714451-bb934ecdcbed?w=600&h=400&fit=crop",
-];
-
 export default function Nosotros() {
   return (
     <section
       id="nosotros"
-      className="min-h-[480px] bg-[#050508] py-24 px-4 sm:px-6 lg:px-8"
+      className="min-h-[480px] bg-[#050508]/80 py-24 px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-7xl space-y-16">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -73,48 +66,7 @@ export default function Nosotros() {
             </div>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <div className="grid grid-cols-2 gap-3">
-              {photos.map((src, i) => (
-                <div
-                  key={i}
-                  className="group relative aspect-[3/2] min-h-[120px] overflow-hidden rounded-lg"
-                >
-                  <Image
-                    src={src}
-                    alt={`Bleu Nightclub ${i + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 1024px) 50vw, 25vw"
-                  />
-                  <div className="absolute inset-0 bg-[#0066FF]/0 transition-colors duration-300 group-hover:bg-[#0066FF]/10" />
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-        </div>
-
-        <FadeIn delay={0.15}>
-          <div className="overflow-hidden rounded-lg border border-white/10">
-            <iframe
-              title="Mapa: cómo llegar a BLEU Nightclub"
-              src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="h-[320px] w-full border-0 opacity-80 [filter:invert(90%)_hue-rotate(180deg)_contrast(0.9)] sm:h-[400px]"
-            />
-          </div>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${MAP_QUERY}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-block font-mono text-xs text-[#00AAFF] transition-colors hover:text-[#F0F0F0]"
-          >
-            Cómo llegar →
-          </a>
-        </FadeIn>
-
-        <FadeIn delay={0.2}>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6">
             <div className="rounded-lg border border-[#0066FF]/40 bg-[#0066FF]/5 p-8">
               <p className="font-mono text-xs tracking-widest text-[#0066FF]/60">
                 VIERNES
@@ -139,7 +91,30 @@ export default function Nosotros() {
                 alta de la semana.
               </p>
             </div>
+            </div>
+          </FadeIn>
+        </div>
+
+        <NuestrasNoches />
+
+        <FadeIn delay={0.15}>
+          <div className="overflow-hidden rounded-lg border border-white/10">
+            <iframe
+              title="Mapa: cómo llegar a BLEU Nightclub"
+              src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="h-[320px] w-full border-0 opacity-80 [filter:invert(90%)_hue-rotate(180deg)_contrast(0.9)] sm:h-[400px]"
+            />
           </div>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${MAP_QUERY}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block font-mono text-xs text-[#00AAFF] transition-colors hover:text-[#F0F0F0]"
+          >
+            Cómo llegar →
+          </a>
         </FadeIn>
       </div>
     </section>
