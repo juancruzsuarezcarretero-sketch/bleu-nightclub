@@ -33,7 +33,7 @@ export default function Navbar() {
       clearReservation();
     }
     const el = document.querySelector(href);
-    el?.scrollIntoView({ behavior: "smooth" });
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: "smooth" });
   };
 
   const mobileMenu = (
@@ -54,13 +54,13 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 px-4 transition-all duration-300 sm:px-6 lg:px-8 ${
         scrolled
           ? "glass border-b border-white/5 py-3"
           : "bg-transparent py-5"
       }`}
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between">
         <a
           href="#"
           onClick={(e) => {

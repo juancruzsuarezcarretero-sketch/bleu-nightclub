@@ -108,13 +108,13 @@ export default function Eventos() {
             type="button"
             aria-label={side === "prev" ? "Anterior" : "Siguiente"}
             onClick={() => scrollByCard(side === "prev" ? -1 : 1)}
-            className={`group/arrow absolute inset-y-0 z-10 hidden w-24 items-center text-[#F0F0F0]/70 transition hover:text-white sm:flex lg:w-32 ${
+            className={`group/arrow absolute inset-y-0 z-10 hidden w-12 items-center text-[#F0F0F0]/70 transition hover:text-white sm:flex ${
               side === "prev"
-                ? "left-0 justify-start bg-gradient-to-r from-[#050508]/80 to-transparent pl-3"
-                : "right-0 justify-end bg-gradient-to-l from-[#050508]/80 to-transparent pr-3"
+                ? "left-0 justify-start bg-gradient-to-r from-[#050508]/80 to-transparent pl-1"
+                : "right-0 justify-end bg-gradient-to-l from-[#050508]/80 to-transparent pr-1"
             }`}
           >
-            <svg viewBox="0 0 24 24" className="h-16 w-16 drop-shadow-[0_0_12px_rgba(0,102,255,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" className="h-10 w-10 drop-shadow-[0_0_12px_rgba(0,102,255,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
               <path d={side === "prev" ? "M15 4l-8 8 8 8" : "M9 4l8 8-8 8"} />
             </svg>
           </button>

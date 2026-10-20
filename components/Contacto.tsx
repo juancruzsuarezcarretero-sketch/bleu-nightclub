@@ -230,13 +230,13 @@ export default function Contacto() {
           </FadeIn>
           <FadeIn delay={0.1}>
             <div className="glass-card rounded-xl p-8">
-              <h3 className="font-bebas text-2xl tracking-wider text-[#F0F0F0]">INFORMACION</h3>
+              <h3 className="font-bebas text-2xl tracking-wider text-[#F0F0F0]">INFORMACIÓN</h3>
               <div className="mt-8 space-y-6">
                 <div className="flex items-start gap-4">
                   <Clock size={18} className="mt-0.5 text-[#00AAFF]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">Horarios</p>
-                    <p className="mt-1 font-mono text-sm text-[#F0F0F0]/70">Viernes y Sabados · 00:00 a 05:00 hs</p>
+                    <p className="mt-1 font-mono text-sm text-[#F0F0F0]/70">Viernes y Sábados · 00:00 a 05:00 hs</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">

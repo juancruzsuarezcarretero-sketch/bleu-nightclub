@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
@@ -219,7 +220,10 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }: LightboxProps) {
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div className="relative h-full w-full" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="relative flex h-full w-full items-center justify-center"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
         {content}
       </div>
     </motion.div>
@@ -285,6 +289,7 @@ function GalleryItem({
 }
 
 export default function NuestrasNoches() {
+  const mounted = useMounted();
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -354,17 +359,21 @@ export default function NuestrasNoches() {
         )}
       </div>
 
-      <AnimatePresence>
-        {lightboxIndex !== null && (
-          <Lightbox
-            photos={visiblePhotos}
-            index={lightboxIndex}
-            onClose={closeLightbox}
-            onPrev={goPrev}
-            onNext={goNext}
-          />
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {lightboxIndex !== null && (
+              <Lightbox
+                photos={visiblePhotos}
+                index={lightboxIndex}
+                onClose={closeLightbox}
+                onPrev={goPrev}
+                onNext={goNext}
+              />
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 }

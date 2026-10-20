@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FadeIn } from "@/components/FadeIn";
 import SectorReservationPanel from "@/components/SectorReservationPanel";
 import {
   MAP_SECTORS,
-  getSectorPriceLabel,
   type MapSectorId,
   type MapSectorSelection,
 } from "@/lib/map-sectors";
@@ -348,9 +346,6 @@ export default function MapaVIP() {
     </>
   ));
 
-  const level = focus !== null ? MAP_LEVELS[focus] : null;
-  const sector = selectedId ? MAP_SECTORS[selectedId] : null;
-
   return (
     <section id="reservas" className="relative overflow-hidden bg-[#050508]/80 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -364,7 +359,7 @@ export default function MapaVIP() {
           </div>
         </FadeIn>
 
-        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div>
           {/* Escena 3D */}
           <div
             ref={sceneRef}
@@ -439,82 +434,6 @@ export default function MapaVIP() {
               </div>
             </div>
           </div>
-
-          {/* Selector de pisos + tarjeta de vista */}
-          <aside className="space-y-3 lg:sticky lg:top-24">
-            {[...MAP_LEVELS].reverse().map((lv) => {
-              const active = focus === lv.index;
-              return (
-                <button
-                  key={lv.index}
-                  type="button"
-                  onClick={() => focusLevel(active ? null : lv.index)}
-                  aria-pressed={active}
-                  className="group flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors"
-                  style={{
-                    borderColor: active ? lv.accent : "rgba(255,255,255,0.1)",
-                    backgroundColor: active ? `${lv.accent}1f` : "transparent",
-                  }}
-                >
-                  <span className="h-8 w-1 rounded-full" style={{ backgroundColor: lv.accent }} />
-                  <span>
-                    <span className="block font-mono text-[10px] uppercase tracking-[0.25em] text-[#F0F0F0]/40">{lv.label}</span>
-                    <span className="block font-bebas text-xl tracking-wider text-[#F0F0F0]">{lv.name}</span>
-                  </span>
-                </button>
-              );
-            })}
-
-            {focus !== null && (
-              <button
-                type="button"
-                onClick={() => focusLevel(null)}
-                className="w-full rounded-lg border border-white/10 px-4 py-2 font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60 transition-colors hover:text-[#F0F0F0]"
-              >
-                Ver todos los pisos
-              </button>
-            )}
-
-            <div
-              className="rounded-xl border bg-black/60 p-5 backdrop-blur"
-              style={{ borderColor: level ? `${level.accent}66` : "rgba(255,255,255,0.1)" }}
-              aria-live="polite"
-            >
-              {level ? (
-                <>
-                  {level.photo && (
-                    <Image src={level.photo} alt={`Vista desde ${level.name}`} width={600} height={340} className="mb-4 aspect-video w-full rounded-lg object-cover" />
-                  )}
-                  <p className="font-mono text-[10px] uppercase tracking-[0.25em]" style={{ color: level.accent }}>
-                    Vista · {level.label}
-                  </p>
-                  <h3 className="mt-1 font-bebas text-2xl tracking-wider text-[#F0F0F0]">{sector ? sector.name : level.name}</h3>
-                  <p className="mt-2 font-mono text-xs leading-relaxed text-[#F0F0F0]/60">{level.view}</p>
-                  {sector ? (
-                    <>
-                      <p className="mt-3 font-mono text-xs text-[#F0F0F0]/80">
-                        {getSectorPriceLabel(sector)} · {sector.capacityLabel}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setPanelOpen(true)}
-                        className="mt-4 w-full rounded-lg py-3 font-bebas text-lg tracking-widest text-white transition-opacity hover:opacity-90"
-                        style={{ backgroundColor: sector.accent }}
-                      >
-                        Reservar {sector.name}
-                      </button>
-                    </>
-                  ) : level.sectors.length > 0 ? (
-                    <p className="mt-3 font-mono text-xs text-[#F0F0F0]/40">Tocá un sector de este piso para reservar.</p>
-                  ) : null}
-                </>
-              ) : (
-                <p className="font-mono text-xs leading-relaxed text-[#F0F0F0]/50">
-                  Elegí un piso o tocá un sector del plano para acercarte y ver su vista.
-                </p>
-              )}
-            </div>
-          </aside>
         </div>
 
         {/* Leyenda */}
