@@ -1,16 +1,5 @@
-export const WHATSAPP_NUMBER = "5493544433834";
-
-export const WHATSAPP_DISPLAY = "+54 9 354 443-3834";
-
-export type PackageId =
-  | "vip-gold"
-  | "vip-standing"
-  | "ultra"
-  | "mesa-vip"
-  | "mesa-ultra";
-
-export function whatsappUrl(message?: string): string {
-  const base = `https://wa.me/${WHATSAPP_NUMBER}`;
+export function whatsappUrl(numero: string, message?: string): string {
+  const base = `https://wa.me/${numero}`;
   if (!message) return base;
   return `${base}?text=${encodeURIComponent(message)}`;
 }

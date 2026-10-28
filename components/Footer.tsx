@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
-import { INSTAGRAM_URL } from "@/lib/site";
+import { useContent } from "@/context/ContentContext";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export default function Footer() {
+  const { contacto } = useContent();
   return (
     <footer className="relative z-10 min-h-[200px] border-t border-white/5 bg-[#050508]/80 py-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl text-center">
@@ -16,7 +17,7 @@ export default function Footer() {
 
         <div className="mt-8 flex items-center justify-center gap-6">
           <a
-            href={INSTAGRAM_URL}
+            href={contacto.instagram}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
@@ -25,14 +26,14 @@ export default function Footer() {
             <InstagramIcon size={22} />
           </a>
           <a
-            href="#"
+            href={contacto.tiktok || "#"}
             aria-label="TikTok"
             className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]"
           >
             <TikTokIcon size={22} />
           </a>
           <a
-            href={whatsappUrl()}
+            href={whatsappUrl(contacto.whatsapp)}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp"
@@ -64,7 +65,7 @@ export default function Footer() {
           © {new Date().getFullYear()} Bleu Nightclub · Córdoba, Argentina
         </p>
         <p className="mt-2 font-mono text-xs text-[#F0F0F0]/30">
-          Av. Marcelo T. de Alvear 635
+          {contacto.direccion.calle}
         </p>
       </div>
     </footer>

@@ -4,13 +4,12 @@ import { InstagramIcon } from "@/components/icons/SocialIcons";
 import { FadeIn } from "@/components/FadeIn";
 import NuestrasNoches from "@/components/NuestrasNoches";
 import { whatsappUrl } from "@/lib/whatsapp";
-import { SITE_ADDRESS } from "@/lib/site";
+import { useContent } from "@/context/ContentContext";
 
-const MAP_QUERY = encodeURIComponent(
-  `${SITE_ADDRESS.street}, ${SITE_ADDRESS.city}, Argentina`
-);
 
 export default function Nosotros() {
+  const { contacto } = useContent();
+  const MAP_QUERY = encodeURIComponent(`${contacto.direccion.calle}, ${contacto.direccion.ciudad}, Argentina`);
   return (
     <section
       id="nosotros"
@@ -32,12 +31,10 @@ export default function Nosotros() {
             </p>
             <div className="mt-8 space-y-3 font-mono text-xs text-[#F0F0F0]/50">
               <p>
-                <span className="text-[#00AAFF]">Horarios:</span> Viernes y
-                Sábados · 00:00 a 05:00 hs
+                <span className="text-[#00AAFF]">Horarios:</span> {contacto.horarios}
               </p>
               <p>
-                <span className="text-[#00AAFF]">Dirección:</span> Av. Marcelo
-                T. de Alvear 635, Córdoba
+                <span className="text-[#00AAFF]">Dirección:</span> {contacto.direccion.calle}, {contacto.direccion.ciudad}
               </p>
               <p>
                 <span className="text-[#00AAFF]">Ingreso:</span> +18 · DNI
@@ -46,7 +43,7 @@ export default function Nosotros() {
             </div>
             <div className="mt-8 flex gap-4">
               <a
-                href="https://instagram.com/bleu.club"
+                href={contacto.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -55,7 +52,7 @@ export default function Nosotros() {
                 <InstagramIcon size={18} />
               </a>
               <a
-                href={whatsappUrl()}
+                href={whatsappUrl(contacto.whatsapp)}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"

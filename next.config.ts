@@ -1,11 +1,20 @@
 import type { NextConfig } from "next";
 
+// Dominio del Supabase propio: ahí viven las fotos que se suben desde Madre.
+const supabaseHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname;
+  } catch {
+    return "";
+  }
+})();
+
 const ContentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com",
+  `img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com${supabaseHost ? ` https://${supabaseHost}` : ""}`,
   "media-src 'self' https://assets.mixkit.co",
   "connect-src 'self'",
   "frame-src https://www.google.com",
@@ -37,6 +46,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "plus.unsplash.com",
       },
+      ...(supabaseHost ? [{ protocol: "https" as const, hostname: supabaseHost }] : []),
     ],
   },
   async headers() {

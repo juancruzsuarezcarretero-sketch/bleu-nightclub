@@ -5,71 +5,10 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/FadeIn";
 import { useMounted } from "@/lib/useMounted";
+import { useContent } from "@/context/ContentContext";
+import type { Categoria } from "@/lib/content";
 
-type EventCategory =
-  | "House"
-  | "Techno"
-  | "Latin"
-  | "Open Format"
-  | "Bass House"
-  | "Reggaeton/Latin";
-
-type FilterCategory = "House" | "Techno" | "Latin" | "Open Format";
-
-interface Event {
-  id: number;
-  name: string;
-  date: string;
-  dateShort: string;
-  category: EventCategory;
-  filterCategory: FilterCategory;
-  image: string;
-}
-
-const events: Event[] = [
-  {
-    id: 1,
-    name: "FISHER",
-    date: "Vie 20/06",
-    dateShort: "VIE 20.06",
-    category: "Techno",
-    filterCategory: "Techno",
-    image:
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600&h=800&fit=crop",
-  },
-  {
-    id: 2,
-    name: "OPEN FORMAT NIGHT",
-    date: "Sáb 21/06",
-    dateShort: "SÁB 21.06",
-    category: "Open Format",
-    filterCategory: "Open Format",
-    image:
-      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&h=800&fit=crop",
-  },
-  {
-    id: 3,
-    name: "VALENTINO KHAN",
-    date: "Vie 27/06",
-    dateShort: "VIE 27.06",
-    category: "Bass House",
-    filterCategory: "House",
-    image:
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=800&fit=crop",
-  },
-  {
-    id: 4,
-    name: "NOCHE LATINA",
-    date: "Sáb 28/06",
-    dateShort: "SÁB 28.06",
-    category: "Reggaeton/Latin",
-    filterCategory: "Latin",
-    image:
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=800&fit=crop",
-  },
-];
-
-const categoryColors: Record<EventCategory, string> = {
+const categoryColors: Record<Categoria, string> = {
   House: "bg-bleu-electric/20 text-bleu-cyan border-bleu-electric/30",
   Techno: "bg-purple-500/20 text-purple-300 border-purple-500/30",
   Latin: "bg-pink-500/20 text-pink-300 border-pink-500/30",
@@ -80,6 +19,7 @@ const categoryColors: Record<EventCategory, string> = {
 
 export default function Eventos() {
   const mounted = useMounted();
+  const { eventos } = useContent();
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const scrollByCard = (dir: 1 | -1) => {
@@ -100,6 +40,10 @@ export default function Eventos() {
             PRÓXIMAS NOCHES
           </h2>
         </FadeIn>
+
+        {eventos.length === 0 && (
+          <p className="font-mono text-sm text-[#F0F0F0]/50">Próximamente. Seguinos en Instagram para enterarte primero.</p>
+        )}
 
         <div className="relative -mx-4 sm:-mx-6 lg:-mx-8">
         {(["prev", "next"] as const).map((side) => (
@@ -124,7 +68,7 @@ export default function Eventos() {
           className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-4 scroll-px-4 sm:px-6 sm:scroll-px-6 lg:px-8 lg:scroll-px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <AnimatePresence mode="popLayout">
-            {events.map((event) => (
+            {eventos.map((event) => (
               <motion.article
                 key={event.id}
                 layout={mounted}

@@ -4,7 +4,7 @@ import {
   formatARS,
   getSectorPriceLabel,
 } from "@/lib/map-sectors";
-import type { PackageId } from "@/lib/whatsapp";
+import type { Paquete } from "@/lib/content";
 
 export type ReservationTheme =
   | "gold"
@@ -24,51 +24,19 @@ export interface ReservationSelection {
   defaultPersons?: number;
 }
 
-export const PACKAGE_RESERVATIONS: Record<PackageId, ReservationSelection> = {
-  "vip-gold": {
-    displayLabel: "VIP Gold - $35.000 por persona",
-    sector: "VIP Gold",
-    priceLabel: "$35.000 por persona",
-    theme: "gold",
-    perPerson: true,
-    pricePerPerson: 35000,
-  },
-  "vip-standing": {
-    displayLabel: "VIP Standing - $50.000 por persona",
-    sector: "VIP Standing",
-    priceLabel: "$50.000 por persona",
-    theme: "gold",
-    perPerson: true,
-    pricePerPerson: 50000,
-  },
-  ultra: {
-    displayLabel: "Ultra VIP - $100.000 por persona",
-    sector: "Ultra VIP",
-    priceLabel: "$100.000 por persona",
-    theme: "purple",
-    perPerson: true,
-    pricePerPerson: 100000,
-  },
-  "mesa-vip": {
-    displayLabel: "Mesa VIP - $700.000 mesa completa",
-    sector: "Mesas VIP",
-    priceLabel: "$700.000",
-    theme: "gold",
-    perPerson: false,
-    fixedPrice: 700000,
-  },
-  "mesa-ultra": {
-    displayLabel: "Mesa Ultra VIP - $1.200.000 mesa completa",
-    sector: "Mesas Ultra VIP",
-    priceLabel: "$1.200.000",
-    theme: "purple",
-    perPerson: false,
-    fixedPrice: 1200000,
-  },
-};
+export const textoPrecio = (p: Paquete): string =>
+  p.unidad === "persona" ? `${formatARS(p.precio)} por persona` : `${formatARS(p.precio)} mesa completa`;
 
-export function reservationFromPackage(packageId: PackageId): ReservationSelection {
-  return PACKAGE_RESERVATIONS[packageId];
+export function reservationFromPaquete(p: Paquete): ReservationSelection {
+  const porPersona = p.unidad === "persona";
+  return {
+    displayLabel: `${p.etiqueta} - ${textoPrecio(p)}`,
+    sector: p.sector,
+    priceLabel: porPersona ? textoPrecio(p) : formatARS(p.precio),
+    theme: p.tema,
+    perPerson: porPersona,
+    ...(porPersona ? { pricePerPerson: p.precio } : { fixedPrice: p.precio }),
+  };
 }
 
 export function reservationFromMapSelection(

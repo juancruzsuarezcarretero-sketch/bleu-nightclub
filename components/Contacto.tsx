@@ -12,9 +12,10 @@ import {
 } from "@/lib/validations";
 import { Clock, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/SocialIcons";
+import { useContent } from "@/context/ContentContext";
+import { usuarioInstagram } from "@/lib/content";
 import {
   whatsappUrl,
-  WHATSAPP_DISPLAY,
   buildReservationWhatsAppMessage,
 } from "@/lib/whatsapp";
 import {
@@ -27,6 +28,7 @@ const MAX_SUBMISSIONS = 3;
 const SESSION_KEY = "bleu_contact_submissions";
 
 export default function Contacto() {
+  const { contacto } = useContent();
   const sectionRef = useRef<HTMLElement>(null);
   const { selection, clearReservation } = useReservation();
   const isReservationMode = Boolean(selection);
@@ -133,7 +135,7 @@ export default function Contacto() {
       // Si falla Supabase, igual abrimos WhatsApp
     }
 
-    window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
+    window.open(whatsappUrl(contacto.whatsapp, message), "_blank", "noopener,noreferrer");
     setSubmitStatus("success");
     clearReservation();
     reservationForm.reset({ motivo: "Reservas", personas: 2 });
@@ -236,15 +238,15 @@ export default function Contacto() {
                   <Clock size={18} className="mt-0.5 text-[#00AAFF]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">Horarios</p>
-                    <p className="mt-1 font-mono text-sm text-[#F0F0F0]/70">Viernes y Sábados · 00:00 a 05:00 hs</p>
+                    <p className="mt-1 font-mono text-sm text-[#F0F0F0]/70">{contacto.horarios}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <MessageCircle size={18} className="mt-0.5 text-[#25D366]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">WhatsApp</p>
-                    <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className="mt-1 font-mono text-sm text-[#F0F0F0]/70 hover:text-[#25D366]">
-                      {WHATSAPP_DISPLAY}
+                    <a href={whatsappUrl(contacto.whatsapp)} target="_blank" rel="noopener noreferrer" className="mt-1 font-mono text-sm text-[#F0F0F0]/70 hover:text-[#25D366]">
+                      {contacto.whatsappDisplay}
                     </a>
                   </div>
                 </div>
@@ -252,8 +254,8 @@ export default function Contacto() {
                   <InstagramIcon size={18} className="mt-0.5 text-[#00AAFF]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">Redes sociales</p>
-                    <a href="https://instagram.com/bleu.club" target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]">
-                      @bleu.club - Instagram
+                    <a href={contacto.instagram} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]">
+                      {usuarioInstagram(contacto.instagram)} - Instagram
                     </a>
                   </div>
                 </div>

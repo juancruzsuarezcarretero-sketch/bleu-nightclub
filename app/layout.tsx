@@ -3,6 +3,8 @@ import { Bebas_Neue, DM_Mono } from "next/font/google";
 import "./globals.css";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { SITE_URL } from "@/lib/site";
+import { ContentProvider } from "@/context/ContentContext";
+import { getContent } from "@/lib/content-server";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -50,19 +52,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = await getContent();
   return (
     <html
       lang="es"
       className={`${bebasNeue.variable} ${dmMono.variable} scroll-smooth`}
     >
       <body className="min-h-screen bg-[#050508] text-[#F0F0F0] antialiased">
-        {children}
-        <WhatsAppButton />
+        <ContentProvider value={content}>
+          {children}
+          <WhatsAppButton />
+        </ContentProvider>
       </body>
     </html>
   );

@@ -1,12 +1,14 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
+import { useContent } from "@/context/ContentContext";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export default function WhatsAppButton() {
+  const { contacto } = useContent();
   return (
     <a
-      href={whatsappUrl()}
+      href={whatsappUrl(contacto.whatsapp)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"

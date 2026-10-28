@@ -1,8 +1,10 @@
 import { LEGAL } from "@/lib/legal";
-import { SITE_ADDRESS, INSTAGRAM_URL } from "@/lib/site";
-import { WHATSAPP_DISPLAY, whatsappUrl } from "@/lib/whatsapp";
+import { getContent } from "@/lib/content-server";
+import { usuarioInstagram } from "@/lib/content";
+import { whatsappUrl } from "@/lib/whatsapp";
 
-export default function ResponsableInfo() {
+export default async function ResponsableInfo() {
+  const { contacto } = await getContent();
   return (
     <ul>
       <li>
@@ -10,12 +12,12 @@ export default function ResponsableInfo() {
         {LEGAL.cuit ? ` (CUIT ${LEGAL.cuit})` : ""}
       </li>
       <li>
-        Domicilio: {SITE_ADDRESS.street}, {SITE_ADDRESS.city}, Argentina
+        Domicilio: {contacto.direccion.calle}, {contacto.direccion.ciudad}, Argentina
       </li>
       <li>
         WhatsApp:{" "}
-        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer">
-          {WHATSAPP_DISPLAY}
+        <a href={whatsappUrl(contacto.whatsapp)} target="_blank" rel="noopener noreferrer">
+          {contacto.whatsappDisplay}
         </a>
       </li>
       {LEGAL.email && (
@@ -25,8 +27,8 @@ export default function ResponsableInfo() {
       )}
       <li>
         Instagram:{" "}
-        <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-          @bleu.club
+        <a href={contacto.instagram} target="_blank" rel="noopener noreferrer">
+          {usuarioInstagram(contacto.instagram)}
         </a>
       </li>
     </ul>

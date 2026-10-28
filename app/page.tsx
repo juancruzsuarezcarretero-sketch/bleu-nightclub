@@ -1,25 +1,25 @@
 import HomePage from "@/components/HomePage";
-import { SITE_NAME, SITE_URL, SITE_ADDRESS, INSTAGRAM_URL } from "@/lib/site";
-import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { getContent } from "@/lib/content-server";
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "NightClub",
-  name: SITE_NAME,
-  url: SITE_URL,
-  image: `${SITE_URL}/og-image.png`,
-  telephone: `+${WHATSAPP_NUMBER}`,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: SITE_ADDRESS.street,
-    addressLocality: SITE_ADDRESS.city,
-    addressRegion: SITE_ADDRESS.region,
-    addressCountry: SITE_ADDRESS.country,
-  },
-  sameAs: [INSTAGRAM_URL],
-};
-
-export default function Page() {
+export default async function Page() {
+  const { contacto } = await getContent();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NightClub",
+    name: SITE_NAME,
+    url: SITE_URL,
+    image: `${SITE_URL}/og-image.png`,
+    telephone: `+${contacto.whatsapp}`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: contacto.direccion.calle,
+      addressLocality: contacto.direccion.ciudad,
+      addressRegion: contacto.direccion.region,
+      addressCountry: contacto.direccion.pais,
+    },
+    sameAs: [contacto.instagram, ...(contacto.tiktok ? [contacto.tiktok] : [])],
+  };
   return (
     <>
       <script
