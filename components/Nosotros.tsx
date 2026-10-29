@@ -8,7 +8,7 @@ import { useContent } from "@/context/ContentContext";
 
 
 export default function Nosotros() {
-  const { contacto } = useContent();
+  const { contacto, textos } = useContent();
   const MAP_QUERY = encodeURIComponent(`${contacto.direccion.calle}, ${contacto.direccion.ciudad}, Argentina`);
   return (
     <section
@@ -22,12 +22,10 @@ export default function Nosotros() {
               NOSOTROS
             </h2>
             <p className="mt-6 font-bebas text-2xl leading-snug text-[#00AAFF] sm:text-3xl">
-              BLEU es más que un boliche. Es la noche de Córdoba.
+              {textos.nosotrosBajada}
             </p>
             <p className="mt-4 font-mono text-sm leading-relaxed text-[#F0F0F0]/60">
-              Desde 2018, redefinimos la experiencia nocturna en el corazón de
-              la ciudad. Música de primer nivel, producción de lujo y el
-              ambiente más exclusivo del Centro.
+              {textos.nosotrosDescripcion}
             </p>
             <div className="mt-8 space-y-3 font-mono text-xs text-[#F0F0F0]/50">
               <p>
@@ -37,8 +35,7 @@ export default function Nosotros() {
                 <span className="text-[#00AAFF]">Dirección:</span> {contacto.direccion.calle}, {contacto.direccion.ciudad}
               </p>
               <p>
-                <span className="text-[#00AAFF]">Ingreso:</span> +18 · DNI
-                obligatorio · Dress code elegante sport
+                <span className="text-[#00AAFF]">Ingreso:</span> {textos.nosotrosIngreso}
               </p>
             </div>
             <div className="mt-8 flex gap-4">
@@ -72,8 +69,7 @@ export default function Nosotros() {
                 BLEU
               </h3>
               <p className="mt-3 font-mono text-sm text-[#F0F0F0]/50">
-                La noche azul de Córdoba. Música electrónica, ambiente premium
-                y la mejor producción del centro.
+                {textos.nocheViernes}
               </p>
             </div>
             <div className="rounded-lg border border-[#C89020]/40 bg-[#C89020]/5 p-8">
@@ -84,8 +80,7 @@ export default function Nosotros() {
                 BARTO
               </h3>
               <p className="mt-3 font-mono text-sm text-[#F0F0F0]/50">
-                El sábado tiene otro nombre. Reggaeton, Latin y la energía más
-                alta de la semana.
+                {textos.nocheSabado}
               </p>
             </div>
             </div>

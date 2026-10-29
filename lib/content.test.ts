@@ -42,6 +42,13 @@ describe("parseContent: la web nunca queda rota", () => {
     expect(parseContent([{ key: "galeria", value: 7 }]).galeria).toEqual(DEFAULT_CONTENT.galeria);
   });
 
+  it("textos: toma los publicados si son válidos y si no vuelve a los de siempre", () => {
+    const nuevos = { ...DEFAULT_CONTENT.textos, heroTitulo: "OTRA NOCHE" };
+    expect(parseContent([{ key: "textos", value: nuevos }]).textos).toEqual(nuevos);
+    expect(parseContent([{ key: "textos", value: { ...nuevos, heroSubtitulo: "" } }]).textos).toEqual(DEFAULT_CONTENT.textos);
+    expect(parseContent([{ key: "textos", value: { heroTitulo: "solo uno" } }]).textos).toEqual(DEFAULT_CONTENT.textos);
+  });
+
   it("paquetes: precio inválido descarta solo ese paquete", () => {
     const [a, b] = DEFAULT_CONTENT.paquetes;
     const resultado = parseContent([{ key: "paquetes", value: [a, { ...b, precio: -5 }, { ...b, id: "x", precio: 1.5 }] }]).paquetes;

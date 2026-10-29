@@ -77,16 +77,28 @@ export const fotoSchema = z.object({
   aspect: z.enum(["tall", "wide", "square"]),
 });
 
+export const textosSchema = z.object({
+  heroTitulo: texto(40),
+  heroSubtitulo: texto(60),
+  nosotrosBajada: texto(120),
+  nosotrosDescripcion: texto(400),
+  nosotrosIngreso: texto(120),
+  nocheViernes: texto(200),
+  nocheSabado: texto(200),
+});
+
 export type Contacto = z.infer<typeof contactoSchema>;
 export type Evento = z.infer<typeof eventoSchema>;
 export type Paquete = z.infer<typeof paqueteSchema>;
 export type Foto = z.infer<typeof fotoSchema>;
+export type Textos = z.infer<typeof textosSchema>;
 
 export interface Content {
   contacto: Contacto;
   eventos: Evento[];
   paquetes: Paquete[];
   galeria: Foto[];
+  textos: Textos;
 }
 
 const MESA = ["Hasta 10 personas", "Lugar reservado", "Cristalería individual", "Moza a disposición"];
@@ -127,6 +139,16 @@ export const DEFAULT_CONTENT: Content = {
     { id: 11, date: "VIE 19.06", eventName: "BLEU ANNIVERSARY", image: "https://images.unsplash.com/photo-1545128485-c400e7702797?w=800&h=600&fit=crop", aspect: "wide" },
     { id: 12, date: "SÁB 20.06", eventName: "CLOSING SUMMER", image: "https://images.unsplash.com/photo-1598387993288-934d9bbd4729?w=800&h=1100&fit=crop", aspect: "tall" },
   ],
+  textos: {
+    heroTitulo: "LA NOCHE ES TUYA",
+    heroSubtitulo: "Córdoba, Argentina",
+    nosotrosBajada: "BLEU es más que un boliche. Es la noche de Córdoba.",
+    nosotrosDescripcion:
+      "Desde 2018, redefinimos la experiencia nocturna en el corazón de la ciudad. Música de primer nivel, producción de lujo y el ambiente más exclusivo del Centro.",
+    nosotrosIngreso: "+18 · DNI obligatorio · Dress code elegante sport",
+    nocheViernes: "La noche azul de Córdoba. Música electrónica, ambiente premium y la mejor producción del centro.",
+    nocheSabado: "El sábado tiene otro nombre. Reggaeton, Latin y la energía más alta de la semana.",
+  },
 };
 
 /** Usuario de Instagram a partir del link (`https://instagram.com/bleu.club` → `@bleu.club`). */
@@ -149,10 +171,12 @@ export function parseContent(filas: unknown): Content {
     }
   }
   const contacto = contactoSchema.safeParse(porClave.get("contacto"));
+  const textos = textosSchema.safeParse(porClave.get("textos"));
   return {
     contacto: contacto.success ? contacto.data : DEFAULT_CONTENT.contacto,
     eventos: lista(porClave.get("eventos"), eventoSchema, DEFAULT_CONTENT.eventos),
     paquetes: lista(porClave.get("paquetes"), paqueteSchema, DEFAULT_CONTENT.paquetes),
     galeria: lista(porClave.get("galeria"), fotoSchema, DEFAULT_CONTENT.galeria),
+    textos: textos.success ? textos.data : DEFAULT_CONTENT.textos,
   };
 }

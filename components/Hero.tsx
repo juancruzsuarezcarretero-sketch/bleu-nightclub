@@ -4,8 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
-
-const TITLE = "LA NOCHE ES TUYA";
+import { useContent } from "@/context/ContentContext";
 
 function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -100,6 +99,7 @@ function ParticleCanvas() {
 }
 
 export default function Hero() {
+  const { textos } = useContent();
   const mounted = useMounted();
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -138,7 +138,7 @@ export default function Hero() {
               visible: { transition: { staggerChildren: 0.03 } },
             }}
           >
-            {TITLE.split("").map((char, i) => (
+            {textos.heroTitulo.split("").map((char, i) => (
               <motion.span
                 key={i}
                 variants={{
@@ -155,12 +155,12 @@ export default function Hero() {
           </motion.h1>
         ) : (
           <h1 className="font-bebas text-5xl leading-none tracking-wider text-[#F0F0F0] sm:text-7xl md:text-8xl lg:text-[96px] text-glow">
-            {TITLE}
+            {textos.heroTitulo}
           </h1>
         )}
 
         <p className="mt-4 font-mono text-xs uppercase tracking-[0.3em] text-[#F0F0F0]/60 sm:text-sm">
-          Córdoba, Argentina
+          {textos.heroSubtitulo}
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
