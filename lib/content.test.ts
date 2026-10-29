@@ -33,6 +33,15 @@ describe("parseContent: la web nunca queda rota", () => {
     expect(parseContent([{ key: "eventos", value: "roto" }]).eventos).toEqual(DEFAULT_CONTENT.eventos);
   });
 
+  it("galería: descarta fotos de otro dominio o con formato inválido y respeta una lista vacía", () => {
+    const buena = DEFAULT_CONTENT.galeria[0];
+    const ajena = { ...buena, id: 99, image: "https://evil.com/f.jpg" };
+    const formato = { ...buena, id: 98, aspect: "gigante" };
+    expect(parseContent([{ key: "galeria", value: [buena, ajena, formato] }]).galeria).toEqual([buena]);
+    expect(parseContent([{ key: "galeria", value: [] }]).galeria).toEqual([]);
+    expect(parseContent([{ key: "galeria", value: 7 }]).galeria).toEqual(DEFAULT_CONTENT.galeria);
+  });
+
   it("paquetes: precio inválido descarta solo ese paquete", () => {
     const [a, b] = DEFAULT_CONTENT.paquetes;
     const resultado = parseContent([{ key: "paquetes", value: [a, { ...b, precio: -5 }, { ...b, id: "x", precio: 1.5 }] }]).paquetes;

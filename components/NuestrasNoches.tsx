@@ -7,125 +7,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { FadeIn } from "@/components/FadeIn";
 import { useMounted } from "@/lib/useMounted";
-
-interface NightPhoto {
-  id: number;
-  date: string;
-  eventName: string;
-  image: string;
-  aspect: "tall" | "wide" | "square";
-}
-
-const ALL_PHOTOS: NightPhoto[] = [
-  {
-    id: 1,
-    date: "VIE 15.05",
-    eventName: "BLEU × SPEED LIDER",
-    image:
-      "https://images.unsplash.com/photo-1566737238500-ac588a25a0a8?w=800&h=1000&fit=crop",
-    aspect: "tall",
-  },
-  {
-    id: 2,
-    date: "SÁB 16.05",
-    eventName: "TECHNO NIGHT",
-    image:
-      "https://images.unsplash.com/photo-1571266028243-e4733b3f597b?w=800&h=600&fit=crop",
-    aspect: "wide",
-  },
-  {
-    id: 3,
-    date: "VIE 22.05",
-    eventName: "LATIN SESSION",
-    image:
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=800&fit=crop",
-    aspect: "square",
-  },
-  {
-    id: 4,
-    date: "SÁB 23.05",
-    eventName: "OPEN FORMAT",
-    image:
-      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&h=1100&fit=crop",
-    aspect: "tall",
-  },
-  {
-    id: 5,
-    date: "VIE 29.05",
-    eventName: "BLEU × MARTIN GARRIX",
-    image:
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&h=600&fit=crop",
-    aspect: "wide",
-  },
-  {
-    id: 6,
-    date: "SÁB 30.05",
-    eventName: "NOCHE DORADA VIP",
-    image:
-      "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50c?w=800&h=900&fit=crop",
-    aspect: "tall",
-  },
-  {
-    id: 7,
-    date: "VIE 05.06",
-    eventName: "HOUSE AFFAIRS",
-    image:
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=800&fit=crop",
-    aspect: "square",
-  },
-  {
-    id: 8,
-    date: "SÁB 06.06",
-    eventName: "BLEU × W&W",
-    image:
-      "https://images.unsplash.com/photo-1429962714451-bb934ecdcbed?w=800&h=600&fit=crop",
-    aspect: "wide",
-  },
-  {
-    id: 9,
-    date: "VIE 12.06",
-    eventName: "BASS HOUSE SESSION",
-    image:
-      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=1000&fit=crop",
-    aspect: "tall",
-  },
-  {
-    id: 10,
-    date: "SÁB 13.06",
-    eventName: "REGGAETON NIGHT",
-    image:
-      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=800&fit=crop",
-    aspect: "square",
-  },
-  {
-    id: 11,
-    date: "VIE 19.06",
-    eventName: "BLEU ANNIVERSARY",
-    image:
-      "https://images.unsplash.com/photo-1545128485-c400e7702797?w=800&h=600&fit=crop",
-    aspect: "wide",
-  },
-  {
-    id: 12,
-    date: "SÁB 20.06",
-    eventName: "CLOSING SUMMER",
-    image:
-      "https://images.unsplash.com/photo-1598387993288-934d9bbd4729?w=800&h=1100&fit=crop",
-    aspect: "tall",
-  },
-];
+import { useContent } from "@/context/ContentContext";
+import type { Foto } from "@/lib/content";
 
 const INITIAL_COUNT = 8;
 const LOAD_MORE_COUNT = 4;
 
-const aspectClasses: Record<NightPhoto["aspect"], string> = {
+const aspectClasses: Record<Foto["aspect"], string> = {
   tall: "aspect-[3/4] sm:aspect-[4/5]",
   wide: "aspect-[4/3]",
   square: "aspect-square",
 };
 
 interface LightboxProps {
-  photos: NightPhoto[];
+  photos: Foto[];
   index: number;
   onClose: () => void;
   onPrev: () => void;
@@ -235,7 +130,7 @@ function GalleryItem({
   index,
   onOpen,
 }: {
-  photo: NightPhoto;
+  photo: Foto;
   index: number;
   onOpen: () => void;
 }) {
@@ -289,12 +184,13 @@ function GalleryItem({
 }
 
 export default function NuestrasNoches() {
+  const { galeria } = useContent();
   const mounted = useMounted();
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const visiblePhotos = ALL_PHOTOS.slice(0, visibleCount);
-  const hasMore = visibleCount < ALL_PHOTOS.length;
+  const visiblePhotos = galeria.slice(0, visibleCount);
+  const hasMore = visibleCount < galeria.length;
 
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
@@ -317,7 +213,7 @@ export default function NuestrasNoches() {
   }, [visiblePhotos.length]);
 
   const loadMore = () => {
-    setVisibleCount((c) => Math.min(c + LOAD_MORE_COUNT, ALL_PHOTOS.length));
+    setVisibleCount((c) => Math.min(c + LOAD_MORE_COUNT, galeria.length));
   };
 
   return (

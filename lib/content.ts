@@ -69,14 +69,24 @@ export const paqueteSchema = z.object({
   tema: z.enum(["gold", "purple"]),
 });
 
+export const fotoSchema = z.object({
+  id: z.number().int(),
+  date: texto(20),
+  eventName: texto(60),
+  image: z.string().refine(imagenPermitida, "Imagen de un dominio no permitido"),
+  aspect: z.enum(["tall", "wide", "square"]),
+});
+
 export type Contacto = z.infer<typeof contactoSchema>;
 export type Evento = z.infer<typeof eventoSchema>;
 export type Paquete = z.infer<typeof paqueteSchema>;
+export type Foto = z.infer<typeof fotoSchema>;
 
 export interface Content {
   contacto: Contacto;
   eventos: Evento[];
   paquetes: Paquete[];
+  galeria: Foto[];
 }
 
 const MESA = ["Hasta 10 personas", "Lugar reservado", "Cristalería individual", "Moza a disposición"];
@@ -102,6 +112,20 @@ export const DEFAULT_CONTENT: Content = {
     { id: "ultra", nombre: "ULTRA", etiqueta: "Ultra VIP", sector: "Ultra VIP", tagline: "Acceso Ultra VIP", badge: null, precio: 100000, unidad: "persona", features: ["Acceso Ultra VIP", "Sin límite de personas"], tema: "purple" },
     { id: "mesa-vip", nombre: "MESA VIP", etiqueta: "Mesa VIP", sector: "Mesas VIP", tagline: "Tu mesa en el sector VIP", badge: null, precio: 700000, unidad: "mesa", features: MESA, tema: "gold" },
     { id: "mesa-ultra", nombre: "MESA ULTRA VIP", etiqueta: "Mesa Ultra VIP", sector: "Mesas Ultra VIP", tagline: "La experiencia definitiva", badge: null, precio: 1200000, unidad: "mesa", features: MESA, tema: "purple" },
+  ],
+  galeria: [
+    { id: 1, date: "VIE 15.05", eventName: "BLEU × SPEED LIDER", image: "https://images.unsplash.com/photo-1566737238500-ac588a25a0a8?w=800&h=1000&fit=crop", aspect: "tall" },
+    { id: 2, date: "SÁB 16.05", eventName: "TECHNO NIGHT", image: "https://images.unsplash.com/photo-1571266028243-e4733b3f597b?w=800&h=600&fit=crop", aspect: "wide" },
+    { id: 3, date: "VIE 22.05", eventName: "LATIN SESSION", image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=800&fit=crop", aspect: "square" },
+    { id: 4, date: "SÁB 23.05", eventName: "OPEN FORMAT", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&h=1100&fit=crop", aspect: "tall" },
+    { id: 5, date: "VIE 29.05", eventName: "BLEU × MARTIN GARRIX", image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&h=600&fit=crop", aspect: "wide" },
+    { id: 6, date: "SÁB 30.05", eventName: "NOCHE DORADA VIP", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50c?w=800&h=900&fit=crop", aspect: "tall" },
+    { id: 7, date: "VIE 05.06", eventName: "HOUSE AFFAIRS", image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=800&fit=crop", aspect: "square" },
+    { id: 8, date: "SÁB 06.06", eventName: "BLEU × W&W", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdcbed?w=800&h=600&fit=crop", aspect: "wide" },
+    { id: 9, date: "VIE 12.06", eventName: "BASS HOUSE SESSION", image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=1000&fit=crop", aspect: "tall" },
+    { id: 10, date: "SÁB 13.06", eventName: "REGGAETON NIGHT", image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=800&fit=crop", aspect: "square" },
+    { id: 11, date: "VIE 19.06", eventName: "BLEU ANNIVERSARY", image: "https://images.unsplash.com/photo-1545128485-c400e7702797?w=800&h=600&fit=crop", aspect: "wide" },
+    { id: 12, date: "SÁB 20.06", eventName: "CLOSING SUMMER", image: "https://images.unsplash.com/photo-1598387993288-934d9bbd4729?w=800&h=1100&fit=crop", aspect: "tall" },
   ],
 };
 
@@ -129,5 +153,6 @@ export function parseContent(filas: unknown): Content {
     contacto: contacto.success ? contacto.data : DEFAULT_CONTENT.contacto,
     eventos: lista(porClave.get("eventos"), eventoSchema, DEFAULT_CONTENT.eventos),
     paquetes: lista(porClave.get("paquetes"), paqueteSchema, DEFAULT_CONTENT.paquetes),
+    galeria: lista(porClave.get("galeria"), fotoSchema, DEFAULT_CONTENT.galeria),
   };
 }
