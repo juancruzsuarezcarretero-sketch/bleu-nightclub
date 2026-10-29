@@ -44,6 +44,27 @@
 
 html {
   scroll-behavior: smooth;
+  /* Al abrir un modal el body pasa a overflow:hidden y la barra desaparecía: la página se ensanchaba de golpe. */
+  scrollbar-gutter: stable;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 102, 255, 0.45) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 102, 255, 0.45);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 body {
