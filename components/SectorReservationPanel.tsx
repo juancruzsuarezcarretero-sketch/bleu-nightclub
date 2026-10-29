@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Minus, Plus } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
 import {
-  MAP_SECTORS,
   MAP_THEME_STYLES,
   formatARS,
   getSectorTypeLabel,
@@ -14,6 +13,7 @@ import {
 } from "@/lib/map-sectors";
 import { reservationFromMapSelection } from "@/lib/reservation-selection";
 import { useReservation } from "@/context/ReservationContext";
+import { useSectores } from "@/context/ContentContext";
 
 interface SectorReservationPanelProps {
   selection: MapSectorSelection | null;
@@ -28,7 +28,8 @@ function PanelContent({
   selection: MapSectorSelection;
   onClose: () => void;
 }) {
-  const config = MAP_SECTORS[selection.sectorId];
+  const sectores = useSectores();
+  const config = sectores[selection.sectorId];
   const theme = MAP_THEME_STYLES[config.theme];
   const perPerson = Boolean(config.pricePerPerson);
   const isTable = config.type === "mesa" && config.fixedPrice;
@@ -44,7 +45,7 @@ function PanelContent({
   const { startReservation } = useReservation();
 
   const handleReserve = () => {
-    startReservation(reservationFromMapSelection(selection, persons));
+    startReservation(reservationFromMapSelection(selection, persons, sectores));
     onClose();
   };
 

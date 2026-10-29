@@ -87,11 +87,16 @@ export const textosSchema = z.object({
   nocheSabado: texto(200),
 });
 
+export const mapaSchema = z.object({
+  backstage: z.number().int().min(1).max(100_000_000),
+});
+
 export type Contacto = z.infer<typeof contactoSchema>;
 export type Evento = z.infer<typeof eventoSchema>;
 export type Paquete = z.infer<typeof paqueteSchema>;
 export type Foto = z.infer<typeof fotoSchema>;
 export type Textos = z.infer<typeof textosSchema>;
+export type Mapa = z.infer<typeof mapaSchema>;
 
 export interface Content {
   contacto: Contacto;
@@ -99,6 +104,7 @@ export interface Content {
   paquetes: Paquete[];
   galeria: Foto[];
   textos: Textos;
+  mapa: Mapa;
 }
 
 const MESA = ["Hasta 10 personas", "Lugar reservado", "Cristalería individual", "Moza a disposición"];
@@ -149,6 +155,7 @@ export const DEFAULT_CONTENT: Content = {
     nocheViernes: "La noche azul de Córdoba. Música electrónica, ambiente premium y la mejor producción del centro.",
     nocheSabado: "El sábado tiene otro nombre. Reggaeton, Latin y la energía más alta de la semana.",
   },
+  mapa: { backstage: 1500000 },
 };
 
 /** Usuario de Instagram a partir del link (`https://instagram.com/bleu.club` → `@bleu.club`). */
@@ -172,11 +179,13 @@ export function parseContent(filas: unknown): Content {
   }
   const contacto = contactoSchema.safeParse(porClave.get("contacto"));
   const textos = textosSchema.safeParse(porClave.get("textos"));
+  const mapa = mapaSchema.safeParse(porClave.get("mapa"));
   return {
     contacto: contacto.success ? contacto.data : DEFAULT_CONTENT.contacto,
     eventos: lista(porClave.get("eventos"), eventoSchema, DEFAULT_CONTENT.eventos),
     paquetes: lista(porClave.get("paquetes"), paqueteSchema, DEFAULT_CONTENT.paquetes),
     galeria: lista(porClave.get("galeria"), fotoSchema, DEFAULT_CONTENT.galeria),
     textos: textos.success ? textos.data : DEFAULT_CONTENT.textos,
+    mapa: mapa.success ? mapa.data : DEFAULT_CONTENT.mapa,
   };
 }

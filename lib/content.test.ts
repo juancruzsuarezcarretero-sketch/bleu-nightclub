@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONTENT, parseContent, usuarioInstagram } from "./content";
-import { reservationFromPaquete, textoPrecio } from "./reservation-selection";
+import { reservationFromMapSelection, reservationFromPaquete, textoPrecio } from "./reservation-selection";
+import { MAP_SECTORS, sectoresConPrecios } from "./map-sectors";
 
 describe("parseContent: la web nunca queda rota", () => {
   it("sin filas o con basura devuelve los valores por defecto", () => {
@@ -90,5 +91,33 @@ describe("usuarioInstagram", () => {
   it("saca el usuario del link", () => {
     expect(usuarioInstagram("https://instagram.com/bleu.club")).toBe("@bleu.club");
     expect(usuarioInstagram("https://www.instagram.com/bleu.club/")).toBe("@bleu.club");
+  });
+});
+
+describe("precios del mapa", () => {
+  it("con los valores por defecto el mapa queda igual que antes", () => {
+    expect(sectoresConPrecios(DEFAULT_CONTENT.paquetes, DEFAULT_CONTENT.mapa)).toEqual(MAP_SECTORS);
+  });
+
+  it("el precio de una experiencia llega a todos sus sectores y el backstage sale de mapa", () => {
+    const paquetes = DEFAULT_CONTENT.paquetes.map((p) => (p.id === "mesa-vip" ? { ...p, precio: 800000 } : p.id === "vip-gold" ? { ...p, precio: 40000 } : p));
+    const sectores = sectoresConPrecios(paquetes, { backstage: 2000000 });
+    for (const id of ["box-1", "box-2", "box-3", "box-4", "box-5"] as const) expect(sectores[id].fixedPrice).toBe(800000);
+    expect(sectores.golden.pricePerPerson).toBe(40000);
+    expect(sectores["ultra-box-1"].fixedPrice).toBe(1200000);
+    expect(sectores.backstage.fixedPrice).toBe(2000000);
+    expect(reservationFromMapSelection({ sectorId: "box-3" }, 4, sectores).fixedPrice).toBe(800000);
+  });
+
+  it("si falta la experiencia o cambió de unidad, queda el precio de fábrica", () => {
+    const sinGold = DEFAULT_CONTENT.paquetes.filter((p) => p.id !== "vip-gold");
+    expect(sectoresConPrecios(sinGold, DEFAULT_CONTENT.mapa).golden.pricePerPerson).toBe(35000);
+    const mesaEnVezDePersona = DEFAULT_CONTENT.paquetes.map((p) => (p.id === "vip-gold" ? { ...p, unidad: "mesa" as const, precio: 1 } : p));
+    expect(sectoresConPrecios(mesaEnVezDePersona, DEFAULT_CONTENT.mapa).golden.pricePerPerson).toBe(35000);
+  });
+
+  it("mapa inválido vuelve al precio de siempre", () => {
+    expect(parseContent([{ key: "mapa", value: { backstage: -1 } }]).mapa).toEqual(DEFAULT_CONTENT.mapa);
+    expect(parseContent([{ key: "mapa", value: { backstage: 1800000 } }]).mapa).toEqual({ backstage: 1800000 });
   });
 });

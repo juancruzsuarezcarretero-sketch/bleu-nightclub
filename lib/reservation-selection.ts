@@ -1,6 +1,5 @@
-import type { MapSectorSelection } from "@/lib/map-sectors";
+import type { MapSectorConfig, MapSectorId, MapSectorSelection } from "@/lib/map-sectors";
 import {
-  MAP_SECTORS,
   formatARS,
   getSectorPriceLabel,
 } from "@/lib/map-sectors";
@@ -41,9 +40,10 @@ export function reservationFromPaquete(p: Paquete): ReservationSelection {
 
 export function reservationFromMapSelection(
   selection: MapSectorSelection,
-  persons = 2
+  persons: number,
+  sectores: Record<MapSectorId, MapSectorConfig>
 ): ReservationSelection {
-  const config = MAP_SECTORS[selection.sectorId];
+  const config = sectores[selection.sectorId];
   const priceLabel = getSectorPriceLabel(config);
 
   return {

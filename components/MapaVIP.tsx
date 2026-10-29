@@ -7,10 +7,12 @@ import { FadeIn } from "@/components/FadeIn";
 import SectorReservationPanel from "@/components/SectorReservationPanel";
 import {
   MAP_SECTORS,
+  formatARS,
   type MapSectorId,
   type MapSectorSelection,
 } from "@/lib/map-sectors";
 import { MAP_LEVELS, levelOfSector } from "@/lib/map-levels";
+import { useSectores } from "@/context/ContentContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -111,6 +113,8 @@ function Slab({ label, accent, children }: { label: string; accent: string; chil
 }
 
 export default function MapaVIP() {
+  const sectores = useSectores();
+  const precio = (id: MapSectorId) => formatARS(sectores[id].pricePerPerson ?? sectores[id].fixedPrice ?? 0);
   const [selectedId, setSelectedId] = useState<MapSectorId | null>(null);
   const [hoveredId, setHoveredId] = useState<MapSectorId | null>(null);
   const [focus, setFocus] = useState<number | null>(null);
@@ -257,7 +261,7 @@ export default function MapaVIP() {
       {R("golden", <>
         <path d="M 345 50 L 730 50 L 730 350 L 650 350 L 650 165 L 345 165 Z" fill={fill("golden")} stroke={stroke("golden")} strokeWidth={sw("golden")} />
         <text x={537} y={92} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={3}>GOLDEN</text>
-        <text x={537} y={112} textAnchor="middle" fill={MAP_SECTORS.golden.accent} fontSize={10} style={mono}>$35.000 / persona</text>
+        <text x={537} y={112} textAnchor="middle" fill={MAP_SECTORS.golden.accent} fontSize={10} style={mono}>{precio("golden")} / persona</text>
         <Couch x={360} y={62} w={42} color={MAP_SECTORS.golden.accent} />
         <Couch x={412} y={62} w={42} color={MAP_SECTORS.golden.accent} />
         <Couch x={671} y={185} w={38} color={MAP_SECTORS.golden.accent} />
@@ -288,13 +292,13 @@ export default function MapaVIP() {
           <rect x={bx} y={y} width={bw} height={bh} fill={fill(id)} stroke={stroke(id)} strokeWidth={sw(id)} />
           <text x={bx + 34} y={y + 26} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>BOX {num}</text>
           <Couch x={bx + bw - 50} y={y + 15} w={36} h={30} color={config.accent} />
-          <text x={bx + 34} y={y + 48} textAnchor="middle" fill={config.accent} fontSize={7} style={mono}>$700.000</text>
+          <text x={bx + 34} y={y + 48} textAnchor="middle" fill={config.accent} fontSize={7} style={mono}>{precio(id)}</text>
         </>);
       })}
       {R("vip-n3-standing", <>
         <path d="M 70 680 L 220 680 L 245 705 L 245 905 L 70 905 Z" fill={fill("vip-n3-standing")} stroke={stroke("vip-n3-standing")} strokeWidth={sw("vip-n3-standing")} />
         <text x={140} y={800} textAnchor="middle" fill="white" fontSize={15} style={bebas} letterSpacing={2} transform="rotate(-90, 140, 800)">VIP NIVEL 3</text>
-        <text x={180} y={888} textAnchor="middle" fill={MAP_SECTORS["vip-n3-standing"].accent} fontSize={7.5} style={mono}>$50.000 / persona</text>
+        <text x={180} y={888} textAnchor="middle" fill={MAP_SECTORS["vip-n3-standing"].accent} fontSize={7.5} style={mono}>{precio("vip-n3-standing")} / persona</text>
       </>)}
     </>,
 
@@ -316,7 +320,7 @@ export default function MapaVIP() {
         <path d="M 637 646 L 730 646 L 730 905 L 557 905 L 557 803 L 637 803 Z" fill={fill("ultra-standing")} stroke={stroke("ultra-standing")} strokeWidth={sw("ultra-standing")} />
         <text x={683} y={685} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>ULTRA</text>
         <text x={683} y={701} textAnchor="middle" fill="white" fontSize={13} style={bebas} letterSpacing={1.5}>STANDING</text>
-        <text x={683} y={718} textAnchor="middle" fill={MAP_SECTORS["ultra-standing"].accent} fontSize={8} style={mono}>$100.000 / p.</text>
+        <text x={683} y={718} textAnchor="middle" fill={MAP_SECTORS["ultra-standing"].accent} fontSize={8} style={mono}>{precio("ultra-standing")} / p.</text>
         <rect x={685} y={745} width={40} height={150} fill="#0a0a0e" stroke="white" strokeWidth={1.5} strokeOpacity={0.9} />
         <text x={705} y={820} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={bebas} letterSpacing={2} transform="rotate(90, 705, 820)">BARRA</text>
       </>)}
@@ -329,7 +333,7 @@ export default function MapaVIP() {
         <path d="M 245 803 L 557 803 L 557 905 L 245 905 Z" fill={fill("backstage")} stroke={stroke("backstage")} strokeWidth={sw("backstage")} />
         <text x={400} y={850} textAnchor="middle" fill="white" fontSize={18} style={bebas} letterSpacing={2}>BACKSTAGE VIP</text>
         <text x={400} y={870} textAnchor="middle" fill="white" fillOpacity={0.7} fontSize={12} style={bebas} letterSpacing={2}>NIVEL 4</text>
-        <text x={400} y={888} textAnchor="middle" fill={MAP_SECTORS.backstage.accent} fontSize={8} style={mono}>$1.500.000</text>
+        <text x={400} y={888} textAnchor="middle" fill={MAP_SECTORS.backstage.accent} fontSize={8} style={mono}>{precio("backstage")}</text>
       </>)}
     </>,
   ];

@@ -1,3 +1,5 @@
+import type { Mapa, Paquete } from "@/lib/content";
+
 export type MapSectorId =
   | "golden"
   | "box-1"
@@ -37,6 +39,40 @@ export interface MapSectorConfig {
   stroke: string;
   hoverFill: string;
   reservable: boolean;
+}
+
+/** Sector del mapa → experiencia (`paquetes`) que fija su precio. Backstage no tiene experiencia: su precio es `mapa.backstage`. */
+const PAQUETE_DE_SECTOR: Partial<Record<MapSectorId, string>> = {
+  golden: "vip-gold",
+  "vip-n3-standing": "vip-standing",
+  "ultra-standing": "ultra",
+  "box-1": "mesa-vip",
+  "box-2": "mesa-vip",
+  "box-3": "mesa-vip",
+  "box-4": "mesa-vip",
+  "box-5": "mesa-vip",
+  "ultra-box-1": "mesa-ultra",
+  "ultra-box-2": "mesa-ultra",
+  "ultra-box-3": "mesa-ultra",
+};
+
+/** Los sectores con los precios publicados; si falta la experiencia o cambió de unidad, queda el precio de fábrica. */
+export function sectoresConPrecios(
+  paquetes: Pick<Paquete, "id" | "precio" | "unidad">[],
+  mapa: Mapa
+): Record<MapSectorId, MapSectorConfig> {
+  const sectores = { ...MAP_SECTORS };
+  for (const base of Object.values(MAP_SECTORS)) {
+    const paquete = paquetes.find((p) => p.id === PAQUETE_DE_SECTOR[base.id]);
+    if (base.id === "backstage") {
+      sectores[base.id] = { ...base, fixedPrice: mapa.backstage };
+    } else if (paquete && base.pricePerPerson && paquete.unidad === "persona") {
+      sectores[base.id] = { ...base, pricePerPerson: paquete.precio };
+    } else if (paquete && base.fixedPrice && paquete.unidad === "mesa") {
+      sectores[base.id] = { ...base, fixedPrice: paquete.precio };
+    }
+  }
+  return sectores;
 }
 
 export function formatARS(amount: number): string {
