@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Expand, Folder, X } from "lucide-react";
 import { FadeIn } from "@/components/FadeIn";
 import { useMounted } from "@/lib/useMounted";
 import { useContent } from "@/context/ContentContext";
 import type { Foto } from "@/lib/content";
+import { agruparCarpetas, type Carpeta } from "@/lib/galeria";
 
 const INITIAL_COUNT = 8;
 const LOAD_MORE_COUNT = 4;
@@ -150,19 +151,11 @@ function GalleryItem({
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
       />
 
-      <div className="absolute inset-0 bg-[#050508]/70 transition-colors duration-300 group-hover:bg-[#050508]/45" />
-
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+      <div className="absolute inset-0 flex items-center justify-center bg-[#050508]/0 transition-colors duration-300 group-hover:bg-[#050508]/45">
         <Expand
           size={28}
-          className="mb-3 text-[#F0F0F0] opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110"
+          className="text-[#F0F0F0] opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110"
         />
-        <span className="font-mono text-xs tracking-widest text-[#00AAFF]">
-          {photo.date}
-        </span>
-        <span className="mt-1 font-bebas text-xl tracking-wide text-[#F0F0F0] sm:text-2xl">
-          {photo.eventName}
-        </span>
       </div>
     </button>
   );
@@ -183,14 +176,60 @@ function GalleryItem({
   );
 }
 
+function CarpetaCard({ carpeta, onOpen }: { carpeta: Carpeta; onOpen: () => void }) {
+  const portada = carpeta.fotos[0];
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group relative aspect-[4/5] w-full overflow-hidden rounded-lg text-left"
+      aria-label={`Abrir ${carpeta.eventName}, ${carpeta.fotos.length} fotos`}
+    >
+      <Image
+        src={portada.image}
+        alt={carpeta.eventName}
+        fill
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
+      <div className="absolute inset-0 flex flex-col justify-end p-4">
+        <span className="font-mono text-xs tracking-widest text-[#00AAFF]">{carpeta.date}</span>
+        <span className="mt-1 font-bebas text-xl leading-tight tracking-wide text-[#F0F0F0] sm:text-2xl">
+          {carpeta.eventName}
+        </span>
+        <span className="mt-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[#F0F0F0]/60">
+          <Folder size={12} />
+          {carpeta.fotos.length} {carpeta.fotos.length === 1 ? "foto" : "fotos"}
+        </span>
+      </div>
+    </button>
+  );
+}
+
 export default function NuestrasNoches() {
   const { galeria } = useContent();
   const mounted = useMounted();
+  const carpetas = useMemo(() => agruparCarpetas(galeria), [galeria]);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [abierta, setAbierta] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const topRef = useRef<HTMLDivElement>(null);
 
-  const visiblePhotos = galeria.slice(0, visibleCount);
-  const hasMore = visibleCount < galeria.length;
+  const carpeta = carpetas.find((c) => c.clave === abierta) ?? null;
+  const fotos = carpeta?.fotos ?? [];
+  const visibleCarpetas = carpetas.slice(0, visibleCount);
+  const hasMore = visibleCount < carpetas.length;
+
+  const irAlInicio = () => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const abrirCarpeta = (clave: string) => {
+    setAbierta(clave);
+    irAlInicio();
+  };
+  const cerrarCarpeta = () => {
+    setAbierta(null);
+    irAlInicio();
+  };
 
   const openLightbox = useCallback((index: number) => {
     setLightboxIndex(index);
@@ -201,23 +240,19 @@ export default function NuestrasNoches() {
   }, []);
 
   const goPrev = useCallback(() => {
-    setLightboxIndex((i) =>
-      i === null ? null : (i - 1 + visiblePhotos.length) % visiblePhotos.length
-    );
-  }, [visiblePhotos.length]);
+    setLightboxIndex((i) => (i === null ? null : (i - 1 + fotos.length) % fotos.length));
+  }, [fotos.length]);
 
   const goNext = useCallback(() => {
-    setLightboxIndex((i) =>
-      i === null ? null : (i + 1) % visiblePhotos.length
-    );
-  }, [visiblePhotos.length]);
+    setLightboxIndex((i) => (i === null ? null : (i + 1) % fotos.length));
+  }, [fotos.length]);
 
   const loadMore = () => {
-    setVisibleCount((c) => Math.min(c + LOAD_MORE_COUNT, galeria.length));
+    setVisibleCount((c) => Math.min(c + LOAD_MORE_COUNT, carpetas.length));
   };
 
   return (
-    <div>
+    <div ref={topRef} className="scroll-mt-24">
       <div>
         <FadeIn>
           <h3 className="mb-4 font-bebas text-3xl tracking-wider text-[#F0F0F0] sm:text-4xl">
@@ -228,39 +263,61 @@ export default function NuestrasNoches() {
           </p>
         </FadeIn>
 
-        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-          {visiblePhotos.map((photo, index) => (
-            <div key={photo.id} className="mb-4 break-inside-avoid">
-              <GalleryItem
-                photo={photo}
-                index={index}
-                onOpen={() => openLightbox(index)}
-              />
-            </div>
-          ))}
-        </div>
-
-        {hasMore && (
-          <FadeIn delay={0.2}>
-            <div className="mt-12 flex justify-center">
+        {carpeta ? (
+          <>
+            <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <button
                 type="button"
-                onClick={loadMore}
-                className="border border-[#0066FF]/50 px-10 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
+                onClick={cerrarCarpeta}
+                className="flex items-center gap-2 border border-[#0066FF]/50 px-4 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
               >
-                Ver Más
+                <ArrowLeft size={14} />
+                Todas las noches
               </button>
+              <div>
+                <p className="font-mono text-xs tracking-widest text-[#00AAFF]">{carpeta.date}</p>
+                <p className="font-bebas text-2xl tracking-wider text-[#F0F0F0] sm:text-3xl">{carpeta.eventName}</p>
+              </div>
             </div>
-          </FadeIn>
+            <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+              {fotos.map((photo, index) => (
+                <div key={photo.id} className="mb-4 break-inside-avoid">
+                  <GalleryItem photo={photo} index={index} onOpen={() => openLightbox(index)} />
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+              {visibleCarpetas.map((c) => (
+                <CarpetaCard key={c.clave} carpeta={c} onOpen={() => abrirCarpeta(c.clave)} />
+              ))}
+            </div>
+
+            {hasMore && (
+              <FadeIn delay={0.2}>
+                <div className="mt-12 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={loadMore}
+                    className="border border-[#0066FF]/50 px-10 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
+                  >
+                    Ver Más
+                  </button>
+                </div>
+              </FadeIn>
+            )}
+          </>
         )}
       </div>
 
       {mounted &&
         createPortal(
           <AnimatePresence>
-            {lightboxIndex !== null && (
+            {lightboxIndex !== null && carpeta && (
               <Lightbox
-                photos={visiblePhotos}
+                photos={fotos}
                 index={lightboxIndex}
                 onClose={closeLightbox}
                 onPrev={goPrev}
