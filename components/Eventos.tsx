@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "@/components/FadeIn";
 import { useMounted } from "@/lib/useMounted";
 import { useContent } from "@/context/ContentContext";
+import { useReservation } from "@/context/ReservationContext";
 import type { Categoria } from "@/lib/content";
 
 const categoryColors: Record<Categoria, string> = {
@@ -22,7 +23,10 @@ export default function Eventos() {
   const { eventos } = useContent();
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const irAReservas = () => {
+  const { elegirEvento } = useReservation();
+
+  const irAReservas = (noche: string) => {
+    elegirEvento(noche);
     const el = document.querySelector("#reservas");
     if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: "smooth" });
   };
@@ -63,7 +67,7 @@ export default function Eventos() {
                 : "right-0 justify-end bg-gradient-to-l from-[#050508]/80 to-transparent pr-1"
             }`}
           >
-            <svg viewBox="0 0 24 24" className="h-10 w-10 drop-shadow-[0_0_12px_rgba(0,102,255,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" className="h-10 w-10 drop-shadow-[0_0_12px_rgba(255,106,0,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
               <path d={side === "prev" ? "M15 4l-8 8 8 8" : "M9 4l8 8-8 8"} />
             </svg>
           </button>
@@ -93,7 +97,7 @@ export default function Eventos() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/60 to-transparent" />
 
                 <div className="absolute inset-0 flex flex-col justify-end p-6">
-                  <span className="font-mono text-xs tracking-widest text-[#00AAFF]">
+                  <span className="font-mono text-xs tracking-widest text-[#FF9A3C]">
                     {event.dateShort}
                   </span>
                   <h3 className="mt-1 font-bebas text-3xl tracking-wide text-[#F0F0F0] sm:text-4xl">
@@ -106,8 +110,8 @@ export default function Eventos() {
                   </span>
                   <button
                     type="button"
-                    onClick={irAReservas}
-                    className="mt-4 w-fit border border-[#0066FF]/50 px-5 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-colors hover:border-[#00AAFF] hover:text-[#00AAFF]"
+                    onClick={() => irAReservas(`${event.name} · ${event.dateShort}`)}
+                    className="mt-4 w-fit border border-[#FF6A00]/50 px-5 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-colors hover:border-[#FF9A3C] hover:text-[#FF9A3C]"
                   >
                     Reserva
                   </button>

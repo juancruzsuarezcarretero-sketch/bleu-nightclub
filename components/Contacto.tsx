@@ -113,6 +113,7 @@ export default function Contacto() {
 
     const message = buildReservationWhatsAppMessage({
       sector: selection.sector,
+      evento: selection.evento,
       nombre: data.nombre,
       fecha: data.fecha,
       personas: data.personas,
@@ -127,7 +128,7 @@ export default function Contacto() {
         body: JSON.stringify({
           ...data,
           sector: selection.sector,
-          seleccion: selection.displayLabel,
+          seleccion: selection.evento ? `${selection.displayLabel} · Noche: ${selection.evento}` : selection.displayLabel,
           precio: price,
         }),
       });
@@ -158,35 +159,41 @@ export default function Contacto() {
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Motivo *</label>
                   <input {...reservationForm.register("motivo")} readOnly className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0]/70 outline-none" />
                 </div>
+                {selection.evento && (
+                  <div>
+                    <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Noche</label>
+                    <input readOnly value={selection.evento} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0]/70 outline-none" />
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Seleccion</label>
                   <input readOnly value={selection.displayLabel} className={"w-full border px-4 py-3 font-mono text-sm outline-none " + (themeStyles?.border || "") + " " + (themeStyles?.bg || "") + " " + (themeStyles?.text || "")} />
                 </div>
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Nombre completo *</label>
-                  <input {...reservationForm.register("nombre")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                  <input {...reservationForm.register("nombre")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                   {reservationForm.formState.errors.nombre && <p className="mt-1 font-mono text-xs text-red-400">{reservationForm.formState.errors.nombre.message}</p>}
                 </div>
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">WhatsApp *</label>
-                  <input {...reservationForm.register("whatsapp")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                  <input {...reservationForm.register("whatsapp")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                   {reservationForm.formState.errors.whatsapp && <p className="mt-1 font-mono text-xs text-red-400">{reservationForm.formState.errors.whatsapp.message}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Fecha deseada *</label>
-                    <input type="date" {...reservationForm.register("fecha")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                    <input type="date" {...reservationForm.register("fecha")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                     {reservationForm.formState.errors.fecha && <p className="mt-1 font-mono text-xs text-red-400">{reservationForm.formState.errors.fecha.message}</p>}
                   </div>
                   <div>
                     <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Personas *</label>
-                    <input type="number" min={1} max={99} {...reservationForm.register("personas", { valueAsNumber: true })} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                    <input type="number" min={1} max={99} {...reservationForm.register("personas", { valueAsNumber: true })} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                     {reservationForm.formState.errors.personas && <p className="mt-1 font-mono text-xs text-red-400">{reservationForm.formState.errors.personas.message}</p>}
                   </div>
                 </div>
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Mensaje (opcional)</label>
-                  <textarea {...reservationForm.register("mensaje")} rows={4} className="w-full resize-none border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                  <textarea {...reservationForm.register("mensaje")} rows={4} className="w-full resize-none border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                 </div>
                 {submitStatus === "success" && <p className="font-mono text-sm text-green-400">WhatsApp abierto. Completa el envio para confirmar.</p>}
                 {submitStatus === "error" && <p className="font-mono text-sm text-red-400">{errorMessage}</p>}
@@ -199,16 +206,16 @@ export default function Contacto() {
                 <input {...generalForm.register("website")} type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 opacity-0" />
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Nombre completo *</label>
-                  <input {...generalForm.register("nombre")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                  <input {...generalForm.register("nombre")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                   {generalForm.formState.errors.nombre && <p className="mt-1 font-mono text-xs text-red-400">{generalForm.formState.errors.nombre.message}</p>}
                 </div>
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Telefono / WhatsApp</label>
-                  <input {...generalForm.register("telefono")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                  <input {...generalForm.register("telefono")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                 </div>
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Motivo *</label>
-                  <select {...generalForm.register("motivo")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]">
+                  <select {...generalForm.register("motivo")} className="w-full border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]">
                     <option value="Reservas">Reservas</option>
                     <option value="Eventos Privados">Eventos Privados</option>
                     <option value="Artistas">Artistas</option>
@@ -218,13 +225,13 @@ export default function Contacto() {
                 </div>
                 <div>
                   <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/60">Mensaje *</label>
-                  <textarea {...generalForm.register("mensaje")} rows={5} className="w-full resize-none border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#0066FF]" />
+                  <textarea {...generalForm.register("mensaje")} rows={5} className="w-full resize-none border border-white/10 bg-[#050508]/50 px-4 py-2.5 font-mono text-sm text-[#F0F0F0] outline-none focus:border-[#FF6A00]" />
                   {generalForm.formState.errors.mensaje && <p className="mt-1 font-mono text-xs text-red-400">{generalForm.formState.errors.mensaje.message}</p>}
                 </div>
                 {submitStatus === "success" && <p className="font-mono text-sm text-green-400">Mensaje enviado. Te respondemos pronto.</p>}
                 {submitStatus === "error" && <p className="font-mono text-sm text-red-400">{errorMessage}</p>}
                 {submitStatus === "rate-limited" && <p className="font-mono text-sm text-yellow-400">Limite de envios alcanzado. Contactanos por WhatsApp.</p>}
-                <button type="submit" disabled={submitStatus === "loading"} className="w-full border border-[#0066FF] bg-[#0066FF] py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all disabled:opacity-50">
+                <button type="submit" disabled={submitStatus === "loading"} className="w-full border border-[#FF6A00] bg-[#FF6A00] py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all disabled:opacity-50">
                   {submitStatus === "loading" ? "Enviando..." : "Enviar"}
                 </button>
               </form>
@@ -235,7 +242,7 @@ export default function Contacto() {
               <h3 className="font-bebas text-2xl tracking-wider text-[#F0F0F0]">INFORMACIÓN</h3>
               <div className="mt-8 space-y-6">
                 <div className="flex items-start gap-4">
-                  <Clock size={18} className="mt-0.5 text-[#00AAFF]" />
+                  <Clock size={18} className="mt-0.5 text-[#FF9A3C]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">Horarios</p>
                     <p className="mt-1 font-mono text-sm text-[#F0F0F0]/70">{contacto.horarios}</p>
@@ -251,10 +258,10 @@ export default function Contacto() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <InstagramIcon size={18} className="mt-0.5 text-[#00AAFF]" />
+                  <InstagramIcon size={18} className="mt-0.5 text-[#FF9A3C]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">Redes sociales</p>
-                    <a href={contacto.instagram} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#00AAFF]">
+                    <a href={contacto.instagram} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#FF9A3C]">
                       {usuarioInstagram(contacto.instagram)} - Instagram
                     </a>
                   </div>

@@ -19,7 +19,7 @@ export default function LegalPage({
       <div className="mx-auto max-w-3xl">
         <Link
           href="/"
-          className="font-mono text-xs tracking-widest text-[#F0F0F0]/50 transition-colors hover:text-[#00AAFF]"
+          className="font-mono text-xs tracking-widest text-[#F0F0F0]/50 transition-colors hover:text-[#FF9A3C]"
         >
           ← VOLVER A BARTO
         </Link>
@@ -31,7 +31,7 @@ export default function LegalPage({
           Última actualización: {LEGAL.actualizado}
         </p>
 
-        <div className="mt-10 space-y-8 font-mono text-sm leading-relaxed text-[#F0F0F0]/70 [&_a]:text-[#00AAFF] [&_a]:underline-offset-4 hover:[&_a]:underline [&_h2]:mb-3 [&_h2]:font-bebas [&_h2]:text-2xl [&_h2]:tracking-[0.12em] [&_h2]:text-[#F0F0F0] [&_li]:ml-5 [&_li]:list-disc [&_ul]:mt-2 [&_ul]:space-y-1">
+        <div className="mt-10 space-y-8 font-mono text-sm leading-relaxed text-[#F0F0F0]/70 [&_a]:text-[#FF9A3C] [&_a]:underline-offset-4 hover:[&_a]:underline [&_h2]:mb-3 [&_h2]:font-bebas [&_h2]:text-2xl [&_h2]:tracking-[0.12em] [&_h2]:text-[#F0F0F0] [&_li]:ml-5 [&_li]:list-disc [&_ul]:mt-2 [&_ul]:space-y-1">
           {children}
         </div>
 
@@ -43,7 +43,7 @@ export default function LegalPage({
             <Link
               key={l.href}
               href={l.href}
-              className="text-[#F0F0F0]/50 transition-colors hover:text-[#00AAFF]"
+              className="text-[#F0F0F0]/50 transition-colors hover:text-[#FF9A3C]"
             >
               {l.label}
             </Link>

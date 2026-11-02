@@ -87,7 +87,7 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }: LightboxProps) {
       </div>
 
       <div className="absolute bottom-8 left-0 right-0 text-center">
-        <p className="font-mono text-xs tracking-widest text-[#00AAFF]">
+        <p className="font-mono text-xs tracking-widest text-[#FF9A3C]">
           {photo.date}
         </p>
         <p className="mt-1 font-bebas text-2xl tracking-wider text-[#F0F0F0] sm:text-3xl">
@@ -194,7 +194,7 @@ function CarpetaCard({ carpeta, onOpen }: { carpeta: Carpeta; onOpen: () => void
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
       <div className="absolute inset-0 flex flex-col justify-end p-4">
-        <span className="font-mono text-xs tracking-widest text-[#00AAFF]">{carpeta.date}</span>
+        <span className="font-mono text-xs tracking-widest text-[#FF9A3C]">{carpeta.date}</span>
         <span className="mt-1 font-bebas text-xl leading-tight tracking-wide text-[#F0F0F0] sm:text-2xl">
           {carpeta.eventName}
         </span>
@@ -269,13 +269,13 @@ export default function NuestrasNoches() {
               <button
                 type="button"
                 onClick={cerrarCarpeta}
-                className="flex items-center gap-2 border border-[#0066FF]/50 px-4 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
+                className="flex items-center gap-2 border border-[#FF6A00]/50 px-4 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#FF6A00] hover:text-[#FF9A3C]"
               >
                 <ArrowLeft size={14} />
                 Todas las noches
               </button>
               <div>
-                <p className="font-mono text-xs tracking-widest text-[#00AAFF]">{carpeta.date}</p>
+                <p className="font-mono text-xs tracking-widest text-[#FF9A3C]">{carpeta.date}</p>
                 <p className="font-bebas text-2xl tracking-wider text-[#F0F0F0] sm:text-3xl">{carpeta.eventName}</p>
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function NuestrasNoches() {
                   <button
                     type="button"
                     onClick={loadMore}
-                    className="border border-[#0066FF]/50 px-10 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
+                    className="border border-[#FF6A00]/50 px-10 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#FF6A00] hover:text-[#FF9A3C]"
                   >
                     Ver Más
                   </button>

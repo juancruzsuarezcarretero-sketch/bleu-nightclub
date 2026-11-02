@@ -9,8 +9,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-bleu-black: #050508;
-  --color-bleu-electric: #0066ff;
-  --color-bleu-cyan: #00aaff;
+  --color-bleu-electric: #FF6A00;
+  --color-bleu-cyan: #FF9A3C;
   --color-bleu-gold: #c89020;
   --color-bleu-white: #f0f0f0;
   --color-bleu-pista: #050b16;
@@ -25,7 +25,7 @@
   --font-sans: var(--font-dm-mono);
   --font-mono: var(--font-dm-mono);
   --font-bebas: var(--font-bebas);
-  --shadow-glow: 0 0 20px rgba(0, 102, 255, 0.5);
+  --shadow-glow: 0 0 20px rgba(255,106,0, 0.5);
   --shadow-glow-gold: 0 0 20px rgba(200, 144, 32, 0.5);
   --shadow-glow-purple: 0 0 20px rgba(153, 51, 204, 0.5);
   --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.5);
@@ -50,7 +50,7 @@ html {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 102, 255, 0.45) transparent;
+  scrollbar-color: rgba(255,106,0, 0.45) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -59,7 +59,7 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 102, 255, 0.45);
+  background: rgba(255,106,0, 0.45);
   border-radius: 99px;
 }
 
@@ -80,7 +80,7 @@ main {
 }
 
 ::selection {
-  background: rgba(0, 102, 255, 0.35);
+  background: rgba(255,106,0, 0.35);
   color: #f0f0f0;
 }
 
@@ -95,11 +95,11 @@ main {
   background: rgba(11, 21, 34, 0.5);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 102, 255, 0.12);
+  border: 1px solid rgba(255,106,0, 0.12);
 }
 
 .text-glow {
-  text-shadow: 0 0 30px rgba(0, 102, 255, 0.4);
+  text-shadow: 0 0 30px rgba(255,106,0, 0.4);
 }
 
 .scrollbar-hide {

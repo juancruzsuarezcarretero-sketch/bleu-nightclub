@@ -21,7 +21,7 @@ export default function Nosotros() {
             <h2 className="font-bebas text-4xl tracking-wider text-[#F0F0F0] sm:text-5xl">
               NOSOTROS
             </h2>
-            <p className="mt-6 font-bebas text-2xl leading-snug text-[#00AAFF] sm:text-3xl">
+            <p className="mt-6 font-bebas text-2xl leading-snug text-[#FF9A3C] sm:text-3xl">
               {textos.nosotrosBajada}
             </p>
             <p className="mt-4 font-mono text-sm leading-relaxed text-[#F0F0F0]/60">
@@ -29,13 +29,13 @@ export default function Nosotros() {
             </p>
             <div className="mt-8 space-y-3 font-mono text-xs text-[#F0F0F0]/50">
               <p>
-                <span className="text-[#00AAFF]">Horarios:</span> {contacto.horarios}
+                <span className="text-[#FF9A3C]">Horarios:</span> {contacto.horarios}
               </p>
               <p>
-                <span className="text-[#00AAFF]">Dirección:</span> {contacto.direccion.calle}, {contacto.direccion.ciudad}
+                <span className="text-[#FF9A3C]">Dirección:</span> {contacto.direccion.calle}, {contacto.direccion.ciudad}
               </p>
               <p>
-                <span className="text-[#00AAFF]">Ingreso:</span> {textos.nosotrosIngreso}
+                <span className="text-[#FF9A3C]">Ingreso:</span> {textos.nosotrosIngreso}
               </p>
             </div>
             <div className="mt-8 flex gap-4">
@@ -44,7 +44,7 @@ export default function Nosotros() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="flex h-10 w-10 items-center justify-center border border-white/10 text-[#F0F0F0]/60 transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
+                className="flex h-10 w-10 items-center justify-center border border-white/10 text-[#F0F0F0]/60 transition-all hover:border-[#FF6A00] hover:text-[#FF9A3C]"
               >
                 <InstagramIcon size={18} />
               </a>
@@ -61,8 +61,8 @@ export default function Nosotros() {
           </FadeIn>
           <FadeIn delay={0.1}>
             <div className="grid grid-cols-1 gap-6">
-            <div className="rounded-lg border border-[#0066FF]/40 bg-[#0066FF]/5 p-8">
-              <p className="font-mono text-xs tracking-widest text-[#0066FF]/60">
+            <div className="rounded-lg border border-[#FF6A00]/40 bg-[#FF6A00]/5 p-8">
+              <p className="font-mono text-xs tracking-widest text-[#FF6A00]/60">
                 VIERNES
               </p>
               <h3 className="mt-2 font-bebas text-5xl tracking-wider text-[#F0F0F0]">
@@ -103,7 +103,7 @@ export default function Nosotros() {
             href={`https://www.google.com/maps/search/?api=1&query=${MAP_QUERY}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-block font-mono text-xs text-[#00AAFF] transition-colors hover:text-[#F0F0F0]"
+            className="mt-3 inline-block font-mono text-xs text-[#FF9A3C] transition-colors hover:text-[#F0F0F0]"
           >
             Cómo llegar →
           </a>

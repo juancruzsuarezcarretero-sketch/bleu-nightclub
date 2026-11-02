@@ -42,7 +42,7 @@ function PanelContent({
   }, [selection.sectorId, defaultPersons]);
 
   const totalPrice = calculateSectorTotal(config, persons);
-  const { startReservation } = useReservation();
+  const { startReservation, eventoElegido } = useReservation();
 
   const handleReserve = () => {
     startReservation(reservationFromMapSelection(selection, persons, sectores));
@@ -70,6 +70,11 @@ function PanelContent({
           <h3 className="mt-1 font-bebas text-3xl tracking-wider text-[#F0F0F0]">
             {config.name}
           </h3>
+          {eventoElegido && (
+            <p className="mt-1 font-mono text-xs text-[#F0F0F0]/60">
+              Noche: {eventoElegido}
+            </p>
+          )}
         </div>
         <button
           type="button"

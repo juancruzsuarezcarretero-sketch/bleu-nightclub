@@ -43,7 +43,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => handleNavClick(link.href)}
-            className="block w-full py-3 text-left font-mono text-sm uppercase tracking-widest text-[#F0F0F0]/80 transition-colors hover:text-[#00AAFF]"
+            className="block w-full py-3 text-left font-mono text-sm uppercase tracking-widest text-[#F0F0F0]/80 transition-colors hover:text-[#FF9A3C]"
           >
             {link.label}
           </button>
@@ -78,7 +78,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => handleNavClick(link.href)}
-                className="font-mono text-xs uppercase tracking-widest text-[#F0F0F0]/70 transition-colors hover:text-[#00AAFF]"
+                className="font-mono text-xs uppercase tracking-widest text-[#F0F0F0]/70 transition-colors hover:text-[#FF9A3C]"
               >
                 {link.label}
               </button>

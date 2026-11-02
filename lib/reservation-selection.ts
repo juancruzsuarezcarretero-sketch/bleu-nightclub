@@ -21,6 +21,8 @@ export interface ReservationSelection {
   pricePerPerson?: number;
   fixedPrice?: number;
   defaultPersons?: number;
+  /** Noche elegida en Próximas noches, p. ej. "FISHER · VIE 20.06". */
+  evento?: string;
 }
 
 export const textoPrecio = (p: Paquete): string =>

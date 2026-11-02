@@ -11,9 +11,12 @@ import type { ReservationSelection } from "@/lib/reservation-selection";
 
 const STORAGE_KEY = "bleu_reservation_selection";
 const INTENT_KEY = "bleu_reservation_intent";
+const EVENT_KEY = "bleu_reservation_event";
 
 interface ReservationContextValue {
   selection: ReservationSelection | null;
+  eventoElegido: string | null;
+  elegirEvento: (evento: string) => void;
   startReservation: (selection: ReservationSelection) => void;
   clearReservation: () => void;
   goToContact: () => void;
@@ -27,11 +30,19 @@ export function ReservationProvider({
   children: React.ReactNode;
 }) {
   const [selection, setSelection] = useState<ReservationSelection | null>(null);
+  const [eventoElegido, setEventoElegido] = useState<string | null>(null);
 
   const clearReservation = useCallback(() => {
     setSelection(null);
     sessionStorage.removeItem(STORAGE_KEY);
+    setEventoElegido(null);
     sessionStorage.removeItem(INTENT_KEY);
+    sessionStorage.removeItem(EVENT_KEY);
+  }, []);
+
+  const elegirEvento = useCallback((evento: string) => {
+    setEventoElegido(evento);
+    sessionStorage.setItem(EVENT_KEY, evento);
   }, []);
 
   const goToContact = useCallback(() => {
@@ -39,18 +50,21 @@ export function ReservationProvider({
   }, []);
 
   const startReservation = useCallback(
-    (next: ReservationSelection) => {
+    (picked: ReservationSelection) => {
+      const next = eventoElegido ? { ...picked, evento: eventoElegido } : picked;
       setSelection(next);
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       sessionStorage.setItem(INTENT_KEY, "1");
       goToContact();
     },
-    [goToContact]
+    [goToContact, eventoElegido]
   );
 
   useEffect(() => {
     const intent = sessionStorage.getItem(INTENT_KEY);
     const stored = sessionStorage.getItem(STORAGE_KEY);
+    const evento = sessionStorage.getItem(EVENT_KEY);
+    if (evento) setEventoElegido(evento);
     if (intent === "1" && stored) {
       try {
         setSelection(JSON.parse(stored) as ReservationSelection);
@@ -62,7 +76,7 @@ export function ReservationProvider({
 
   return (
     <ReservationContext.Provider
-      value={{ selection, startReservation, clearReservation, goToContact }}
+      value={{ selection, eventoElegido, elegirEvento, startReservation, clearReservation, goToContact }}
     >
       {children}
     </ReservationContext.Provider>

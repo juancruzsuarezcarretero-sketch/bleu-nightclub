@@ -6,6 +6,7 @@ export function whatsappUrl(numero: string, message?: string): string {
 
 export function buildReservationWhatsAppMessage(data: {
   sector: string;
+  evento?: string;
   nombre: string;
   fecha: string;
   personas: number;
@@ -14,6 +15,7 @@ export function buildReservationWhatsAppMessage(data: {
 }): string {
   const lines = [
     "Hola! Quiero hacer una reserva:",
+    ...(data.evento ? [`🎉 Noche: ${data.evento}`] : []),
     `📍 Sector: ${data.sector}`,
     `👤 Nombre: ${data.nombre}`,
     `📅 Fecha: ${data.fecha}`,

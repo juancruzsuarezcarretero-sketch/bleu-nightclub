@@ -55,7 +55,7 @@ function ParticleCanvas() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 102, 255, 0.4)";
+        ctx.fillStyle = "rgba(255,106,0, 0.4)";
         ctx.fill();
       });
 
@@ -69,7 +69,7 @@ function ParticleCanvas() {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(0, 170, 255, ${opacity})`;
+            ctx.strokeStyle = `rgba(255,154,60, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -167,14 +167,14 @@ export default function Hero() {
           <button
             type="button"
             onClick={handleReserveMesa}
-            className="w-full rounded-none border border-[#0066FF] bg-[#0066FF] px-8 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:bg-[#0066FF]/90 sm:w-auto"
+            className="w-full rounded-none border border-[#FF6A00] bg-[#FF6A00] px-8 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:bg-[#FF6A00]/90 sm:w-auto"
           >
             Reservar Mesa
           </button>
           <button
             type="button"
             onClick={() => scrollTo("#eventos")}
-            className="w-full rounded-none border border-[#F0F0F0]/30 bg-transparent px-8 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#00AAFF] hover:text-[#00AAFF] sm:w-auto"
+            className="w-full rounded-none border border-[#F0F0F0]/30 bg-transparent px-8 py-3 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#FF9A3C] hover:text-[#FF9A3C] sm:w-auto"
           >
             Ver Eventos
           </button>

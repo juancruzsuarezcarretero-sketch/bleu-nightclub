@@ -58,7 +58,7 @@ export default function Packages() {
                 : "right-0 justify-end bg-gradient-to-l from-[#050508]/80 to-transparent pr-1"
             }`}
           >
-            <svg viewBox="0 0 24 24" className="h-10 w-10 drop-shadow-[0_0_12px_rgba(0,102,255,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" className="h-10 w-10 drop-shadow-[0_0_12px_rgba(255,106,0,0.6)] transition-transform group-hover/arrow:scale-110" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
               <path d={side === "prev" ? "M15 4l-8 8 8 8" : "M9 4l8 8-8 8"} />
             </svg>
           </button>
@@ -97,7 +97,7 @@ export default function Packages() {
                     >
                       <Check
                         size={14}
-                        className="mt-0.5 flex-shrink-0 text-[#00AAFF]"
+                        className="mt-0.5 flex-shrink-0 text-[#FF9A3C]"
                       />
                       {feature}
                     </li>
@@ -111,7 +111,7 @@ export default function Packages() {
                 <button
                   type="button"
                   onClick={() => handleReserve(pkg)}
-                  className="mt-4 w-full border border-[#0066FF]/50 py-2.5 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#0066FF] hover:text-[#00AAFF]"
+                  className="mt-4 w-full border border-[#FF6A00]/50 py-2.5 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-all hover:border-[#FF6A00] hover:text-[#FF9A3C]"
                 >
                   Reservar
                 </button>

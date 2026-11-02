@@ -21,14 +21,14 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
-            className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]"
+            className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]"
           >
             <InstagramIcon size={22} />
           </a>
           <a
             href={contacto.tiktok || "#"}
             aria-label="TikTok"
-            className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]"
+            className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]"
           >
             <TikTokIcon size={22} />
           </a>
@@ -47,13 +47,13 @@ export default function Footer() {
           aria-label="Documentos legales"
           className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-xs"
         >
-          <Link href="/terminos" className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]">
+          <Link href="/terminos" className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]">
             Términos y condiciones
           </Link>
-          <Link href="/privacidad" className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]">
+          <Link href="/privacidad" className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]">
             Privacidad
           </Link>
-          <Link href="/cookies" className="text-[#F0F0F0]/40 transition-colors hover:text-[#00AAFF]">
+          <Link href="/cookies" className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]">
             Cookies
           </Link>
         </nav>
