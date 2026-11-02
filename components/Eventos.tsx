@@ -22,7 +22,12 @@ export default function Eventos() {
   const { eventos } = useContent();
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const scrollByCard = (dir: 1 | -1) => {
+  const irAReservas = () => {
+    const el = document.querySelector("#reservas");
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: "smooth" });
+  };
+
+  const scrollByCard =(dir: 1 | -1) => {
     const el = scrollerRef.current;
     if (!el) return;
     el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: "smooth" });
@@ -101,9 +106,10 @@ export default function Eventos() {
                   </span>
                   <button
                     type="button"
-                    className="mt-4 w-fit border border-[#0066FF]/50 px-5 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0]"
+                    onClick={irAReservas}
+                    className="mt-4 w-fit border border-[#0066FF]/50 px-5 py-2 font-mono text-xs uppercase tracking-widest text-[#F0F0F0] transition-colors hover:border-[#00AAFF] hover:text-[#00AAFF]"
                   >
-                    Entradas
+                    Reserva
                   </button>
                 </div>
               </motion.article>

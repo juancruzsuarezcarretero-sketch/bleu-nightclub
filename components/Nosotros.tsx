@@ -92,7 +92,7 @@ export default function Nosotros() {
         <FadeIn delay={0.15}>
           <div className="overflow-hidden rounded-lg border border-white/10">
             <iframe
-              title="Mapa: cómo llegar a BLEU Nightclub"
+              title="Mapa: cómo llegar a BARTO Nightclub"
               src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

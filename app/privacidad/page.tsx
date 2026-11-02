@@ -4,8 +4,8 @@ import LegalPage from "@/components/LegalPage";
 import ResponsableInfo from "@/components/ResponsableInfo";
 
 export const metadata: Metadata = {
-  title: "Política de privacidad | BLEU Nightclub",
-  description: "Qué datos personales recopila el sitio de BLEU Nightclub, para qué los usa y cómo ejercer tus derechos.",
+  title: "Política de privacidad | BARTO Nightclub",
+  description: "Qué datos personales recopila el sitio de BARTO Nightclub, para qué los usa y cómo ejercer tus derechos.",
   alternates: { canonical: "/privacidad" },
 };
 

@@ -21,7 +21,7 @@ export default function LegalPage({
           href="/"
           className="font-mono text-xs tracking-widest text-[#F0F0F0]/50 transition-colors hover:text-[#00AAFF]"
         >
-          ← VOLVER A BLEU
+          ← VOLVER A BARTO
         </Link>
 
         <h1 className="mt-10 font-bebas text-5xl tracking-[0.15em] text-[#F0F0F0] sm:text-6xl">

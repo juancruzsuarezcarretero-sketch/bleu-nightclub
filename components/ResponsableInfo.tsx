@@ -8,7 +8,7 @@ export default async function ResponsableInfo() {
   return (
     <ul>
       <li>
-        Responsable: {LEGAL.razonSocial || "Bleu Nightclub"}
+        Responsable: {LEGAL.razonSocial || "BARTO Nightclub"}
         {LEGAL.cuit ? ` (CUIT ${LEGAL.cuit})` : ""}
       </li>
       <li>

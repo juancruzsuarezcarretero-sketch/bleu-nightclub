@@ -12,7 +12,7 @@ export default function Footer() {
     <footer className="relative z-10 min-h-[200px] border-t border-white/5 bg-[#050508]/80 py-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl text-center">
         <p className="font-bebas text-5xl tracking-[0.3em] text-[#F0F0F0] sm:text-6xl">
-          BLEU
+          BARTO
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-6">
@@ -62,7 +62,7 @@ export default function Footer() {
           Solo mayores de 18 años · Beber con moderación · Prohibida la venta de alcohol a menores de 18
         </p>
         <p className="mt-3 font-mono text-xs text-[#F0F0F0]/40">
-          © {new Date().getFullYear()} Bleu Nightclub · Córdoba, Argentina
+          © {new Date().getFullYear()} BARTO Nightclub · Córdoba, Argentina
         </p>
         <p className="mt-2 font-mono text-xs text-[#F0F0F0]/30">
           {contacto.direccion.calle}

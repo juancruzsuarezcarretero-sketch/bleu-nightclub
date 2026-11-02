@@ -69,7 +69,7 @@ export default function Navbar() {
           }}
           className="font-bebas text-3xl tracking-[0.2em] text-[#F0F0F0]"
         >
-          BLEU
+          BARTO
         </a>
 
         <ul className="hidden items-center gap-8 md:flex">

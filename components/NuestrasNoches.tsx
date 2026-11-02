@@ -259,7 +259,7 @@ export default function NuestrasNoches() {
             NUESTRAS NOCHES
           </h3>
           <p className="mb-12 font-mono text-xs text-[#F0F0F0]/50">
-            Reviví las mejores noches de Bleu
+            Reviví las mejores noches de Barto
           </p>
         </FadeIn>
 

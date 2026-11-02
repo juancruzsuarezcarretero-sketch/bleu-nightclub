@@ -3,8 +3,8 @@ import LegalPage from "@/components/LegalPage";
 import ResponsableInfo from "@/components/ResponsableInfo";
 
 export const metadata: Metadata = {
-  title: "Términos y condiciones | BLEU Nightclub",
-  description: "Reglas de uso del sitio web de BLEU Nightclub y condiciones de las reservas.",
+  title: "Términos y condiciones | BARTO Nightclub",
+  description: "Reglas de uso del sitio web de BARTO Nightclub y condiciones de las reservas.",
   alternates: { canonical: "/terminos" },
 };
 
@@ -21,7 +21,7 @@ export default function Page() {
         <h2>2. Uso del sitio</h2>
         <p>
           Al usar este sitio aceptás estos términos. El sitio informa sobre
-          eventos, sectores, paquetes y datos de contacto de BLEU Nightclub.
+          eventos, sectores, paquetes y datos de contacto de BARTO Nightclub.
           Te pedimos usarlo de forma lícita y no intentar interferir con su
           funcionamiento, enviar información falsa ni usar los formularios
           para enviar spam.
@@ -42,7 +42,7 @@ export default function Page() {
         <p>
           Completar el formulario de reserva o enviar el mensaje por WhatsApp
           es una solicitud: no garantiza la mesa o el sector hasta que el
-          equipo de BLEU la confirme por los canales de contacto. Este sitio
+          equipo de BARTO la confirme por los canales de contacto. Este sitio
           no procesa pagos. Las condiciones de cada reserva (seña, horarios,
           cancelación) se acuerdan al confirmarla.
         </p>
@@ -56,8 +56,8 @@ export default function Page() {
       <section>
         <h2>5. Ingreso al local</h2>
         <p>
-          El ingreso y la permanencia en BLEU se rigen por las normas del
-          local y la legislación vigente. BLEU puede reservarse el derecho de
+          El ingreso y la permanencia en BARTO se rigen por las normas del
+          local y la legislación vigente. BARTO puede reservarse el derecho de
           admisión en los términos permitidos por la ley.
         </p>
         <p className="mt-3">
@@ -75,7 +75,7 @@ export default function Page() {
       <section>
         <h2>6. Propiedad intelectual</h2>
         <p>
-          La marca BLEU, el diseño del sitio y sus contenidos pertenecen a sus
+          La marca BARTO, el diseño del sitio y sus contenidos pertenecen a sus
           titulares. No podés copiarlos ni usarlos con fines comerciales sin
           autorización. Algunas imágenes y videos provienen de servicios de
           terceros y se rigen por sus licencias.

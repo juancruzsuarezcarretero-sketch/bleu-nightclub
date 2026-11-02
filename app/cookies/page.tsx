@@ -3,8 +3,8 @@ import Link from "next/link";
 import LegalPage from "@/components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Política de cookies | BLEU Nightclub",
-  description: "Uso de cookies y almacenamiento del navegador en el sitio de BLEU Nightclub.",
+  title: "Política de cookies | BARTO Nightclub",
+  description: "Uso de cookies y almacenamiento del navegador en el sitio de BARTO Nightclub.",
   alternates: { canonical: "/cookies" },
 };
 

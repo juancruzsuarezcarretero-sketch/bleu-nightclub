@@ -21,14 +21,14 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BLEU Nightclub",
+  title: "BARTO Nightclub",
   description: "La noche es tuya — Córdoba, Argentina",
   metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: "BLEU Nightclub",
+    title: "BARTO Nightclub",
     description: "La noche es tuya — Córdoba, Argentina",
     url: SITE_URL,
-    siteName: "BLEU Nightclub",
+    siteName: "BARTO Nightclub",
     type: "website",
     locale: "es_AR",
     images: [
@@ -36,13 +36,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "BLEU Nightclub",
+        alt: "BARTO Nightclub",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "BLEU Nightclub",
+    title: "BARTO Nightclub",
     description: "La noche es tuya — Córdoba, Argentina",
     images: ["/og-image.png"],
   },
