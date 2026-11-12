@@ -1,17 +1,22 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { FadeIn } from "@/components/FadeIn";
 import SectorReservationPanel from "@/components/SectorReservationPanel";
+import SectorViewCard from "@/components/SectorViewCard";
+import LevelViewCard from "@/components/LevelViewCard";
 import { MAP_SECTORS, formatARS, type MapSectorId, type MapSectorSelection } from "@/lib/map-sectors";
 import { MAP_LEVELS, levelOfSector } from "@/lib/map-levels";
+import { viewpoint, viewpointAt } from "@/lib/map-3d";
 import { useSectores } from "@/context/ContentContext";
 
 const MapaScene3D = dynamic(() => import("@/components/MapaScene3D"), {
   ssr: false,
   loading: () => <div className="absolute inset-0 animate-pulse rounded-xl bg-white/[0.03]" aria-hidden />,
 });
+
+type View = { kind: "sector"; id: MapSectorId; at: [number, number] } | { kind: "piso"; level: number; x: number; z: number };
 
 const arrow = (d: string) => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -38,19 +43,32 @@ export default function MapaVIP() {
   const precio = (id: MapSectorId) => formatARS(sectores[id].pricePerPerson ?? sectores[id].fixedPrice ?? 0);
   const [selectedId, setSelectedId] = useState<MapSectorId | null>(null);
   const [focus, setFocus] = useState<number | null>(null);
+  // Desde dónde se mira (primera persona): un sector o un punto de un piso; null = mapa completo
+  const [view, setView] = useState<View | null>(null);
+  const vista = useMemo(
+    () => (view === null ? null : view.kind === "sector" ? viewpoint(view.id, view.at) : viewpointAt(view.level, view.x, view.z)),
+    [view]
+  );
   const [panelOpen, setPanelOpen] = useState(false);
   const webgl = useSyncExternalStore(noSubscribe, hasWebGL, () => true);
 
   const focusLevel = useCallback((i: number | null) => {
     setFocus(i);
+    setView(null);
     if (i === null) setSelectedId(null);
     else setSelectedId((cur) => (cur && levelOfSector(cur) === i ? cur : null));
   }, []);
 
-  const handleSelect = useCallback((id: MapSectorId) => {
+  const handleSelect = useCallback((id: MapSectorId, x = 0, z = 0) => {
     setSelectedId(id);
     setFocus(levelOfSector(id));
-    setPanelOpen(true);
+    setView({ kind: "sector", id, at: [x, z] });
+  }, []);
+
+  const handleViewFloor = useCallback((level: number, x: number, z: number) => {
+    setSelectedId(null);
+    setFocus(level);
+    setView({ kind: "piso", level, x, z });
   }, []);
 
   const panelSelection: MapSectorSelection | null = selectedId ? { sectorId: selectedId } : null;
@@ -107,10 +125,16 @@ export default function MapaVIP() {
                 {arrow("M5 9l7 7 7-7")}
               </button>
             </nav>
-            <MapaScene3D precios={precios} selectedId={selectedId} focus={focus} onSelect={handleSelect} onFocusLevel={focusLevel} />
-            <p className="pointer-events-none absolute bottom-2 left-0 right-0 text-center font-mono text-[10px] uppercase tracking-wider text-[#F0F0F0]/35">
-              Arrastrá de costado para girar
-            </p>
+            <MapaScene3D precios={precios} selectedId={selectedId} focus={focus} vista={vista} onSelect={handleSelect} onViewFloor={handleViewFloor} />
+            {view?.kind === "sector" ? (
+              <SectorViewCard key={view.id} id={view.id} onBack={() => focusLevel(null)} onReserve={() => setPanelOpen(true)} />
+            ) : view?.kind === "piso" ? (
+              <LevelViewCard key={view.level} level={view.level} onBack={() => focusLevel(null)} />
+            ) : (
+              <p className="pointer-events-none absolute bottom-2 left-0 right-0 text-center font-mono text-[10px] uppercase tracking-wider text-[#F0F0F0]/35">
+                Arrastrá de costado para girar
+              </p>
+            )}
           </div>
         )}
 
@@ -139,7 +163,7 @@ export default function MapaVIP() {
                         key={id}
                         type="button"
                         aria-pressed={selectedId === id}
-                        onClick={() => handleSelect(id)}
+                        onClick={() => { handleSelect(id); setPanelOpen(true); }}
                         className="rounded border px-2.5 py-1 font-mono text-xs text-[#F0F0F0]/80 transition hover:text-white"
                         style={{ borderColor: selectedId === id ? MAP_SECTORS[id].accent : "rgba(255,255,255,0.12)" }}
                       >

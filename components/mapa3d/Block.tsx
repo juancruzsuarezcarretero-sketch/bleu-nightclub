@@ -55,7 +55,8 @@ export interface BlockProps {
   edge?: string;
   metalness?: number;
   roughness?: number;
-  onClick?: () => void;
+  /** Recibe el punto del mundo donde se hizo clic. */
+  onClick?: (point: THREE.Vector3) => void;
   onOver?: () => void;
   onOut?: () => void;
 }
@@ -77,7 +78,7 @@ export function Block({
       geometry={geometry}
       position={[0, base, 0]}
       rotation={[-Math.PI / 2, 0, 0]}
-      onClick={interactive ? (e) => { e.stopPropagation(); onClick?.(); } : undefined}
+      onClick={interactive ? (e) => { e.stopPropagation(); onClick?.(e.point); } : undefined}
       onPointerOver={interactive ? (e) => { e.stopPropagation(); onOver?.(); } : undefined}
       onPointerOut={interactive ? () => onOut?.() : undefined}
       raycast={interactive ? undefined : () => null}

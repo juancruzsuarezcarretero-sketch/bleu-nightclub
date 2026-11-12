@@ -152,6 +152,15 @@ export const CABINA_PLATFORM = { level: 3, elevation: 2, points: PROPS.cabina.po
 
 export interface Box { x: number; y: number; w: number; h: number }
 
+/** Puerta (hueco de la baranda) entre el piso azul y la cabina, a mitad de su lado oeste. */
+export const PUERTA_CABINA: Box = { x: 235, y: 740.5, w: 20, h: 24 };
+
+/** Baranda que separa el piso azul de la cabina (x=245, el lado oeste de la cabina), con la puerta en el medio. */
+export const BARANDA_CABINA: [Pt, Pt][] = [
+  [[245, 705], [245, PUERTA_CABINA.y]],
+  [[245, PUERTA_CABINA.y + PUERTA_CABINA.h], [245, 800]],
+];
+
 export interface StairRun {
   /** Zona del plano que ocupa la escalera. */
   box: Box;
@@ -197,4 +206,74 @@ export function levelCenter(level: number): Pt {
   const xs = pts.map((p) => p[0]);
   const ys = pts.map((p) => p[1]);
   return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+}
+
+/** Altura de los ojos sobre el techo del sector (1 unidad del mundo ≈ 0,75 m). */
+export const EYE_HEIGHT = 2.2;
+
+/** Desde dónde se mira (`eye`) y hacia dónde (`look`), en coordenadas del mundo. */
+export interface Vista {
+  eye: [number, number, number];
+  look: [number, number, number];
+}
+
+const dentro = ([x, y]: Pt, poly: Pt[]) => {
+  let r = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) r = !r;
+  }
+  return r;
+};
+
+/** Lo que se mira desde un piso: la pista desde los pisos de arriba y la cabina desde la pista. */
+function miradaDesdePiso(level: number, ex: number, ez: number): [number, number, number] {
+  const [px, pz] = planToWorld(levelCenter(0));
+  if (level !== 0) return [px, 1.2, pz];
+  const [cx, cz] = planToWorld(PROPS.cabina.points.reduce<Pt>((a, p, _, t) => [a[0] + p[0] / t.length, a[1] + p[1] / t.length], [0, 0]));
+  const lejos = Math.hypot(cx - ex, cz - ez) > 3;
+  return lejos ? [cx, LEVEL_HEIGHT[2] + 1.5, cz] : [px, 1.2, pz];
+}
+
+/** Vista de alguien parado en un punto cualquiera de un piso (en coordenadas del mundo). */
+export function viewpointAt(level: number, x: number, z: number): Vista {
+  return { eye: [x, LEVEL_HEIGHT[level] + EYE_HEIGHT, z], look: miradaDesdePiso(level, x, z) };
+}
+
+/** Sectores amplios (varios palcos o zona standing) donde la vista sale del punto exacto que se toca. */
+export const SECTORES_LIBRES: MapSectorId[] = ["golden", "vip-n3-standing", "ultra-standing", "backstage"];
+
+/**
+ * Punto de vista de alguien parado en un sector, asomado al borde que da hacia la pista (como en un box,
+ * apoyado en el límite); si el sector no tiene un borde utilizable, desde su sillón o centro.
+ */
+export function viewpoint(id: MapSectorId, at?: [number, number]): Vista {
+  const { level, height, points } = SECTOR_SHAPES[id];
+  const [lx, lz] = planToWorld(levelCenter(0));
+  const pista = levelCenter(0);
+  const y = LEVEL_HEIGHT[level] + height + EYE_HEIGHT;
+
+  const sofa = SOFAS[id]?.[0]?.points ?? points;
+  const centro: Pt = [sofa.reduce((a, p) => a + p[0], 0) / sofa.length, sofa.reduce((a, p) => a + p[1], 0) / sofa.length];
+
+  // Borde cuyo punto medio queda más cerca de la pista, corrido hacia adentro del sector
+  let mejor: Pt | null = null;
+  let distancia = Infinity;
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    const m: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const d = Math.hypot(m[0] - pista[0], m[1] - pista[1]);
+    if (d >= distancia) continue;
+    const largo = Math.hypot(centro[0] - m[0], centro[1] - m[1]) || 1;
+    const adentro: Pt = [m[0] + ((centro[0] - m[0]) / largo) * 4, m[1] + ((centro[1] - m[1]) / largo) * 4];
+    if (dentro(adentro, points)) {
+      mejor = adentro;
+      distancia = d;
+    }
+  }
+  // En los sectores grandes cada uno elige dónde pararse: los ojos van al punto donde hizo clic
+  const [ex, ez] = at && SECTORES_LIBRES.includes(id) ? at : planToWorld(mejor ?? centro);
+  return { eye: [ex, y, ez], look: [lx, 1.2, lz] };
 }

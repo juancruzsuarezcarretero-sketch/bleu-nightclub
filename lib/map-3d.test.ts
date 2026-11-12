@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAP_SECTORS, type MapSectorId } from "./map-sectors";
 import { levelOfSector, MAP_LEVELS } from "./map-levels";
-import { CABINA_PLATFORM, DIVIDERS, LEVEL_FLOORS, LEVEL_HEIGHT, LOCAL_BOUNDS, PROPS, SECTOR_SHAPES, SOFAS, STAIRS, levelCenter, openEdges, planToWorld, sofaParts, tableFor, type Pt, type Sofa } from "./map-3d";
+import { BARANDA_CABINA, PUERTA_CABINA, CABINA_PLATFORM, DIVIDERS, LEVEL_FLOORS, LEVEL_HEIGHT, LOCAL_BOUNDS, PROPS, SECTOR_SHAPES, SOFAS, EYE_HEIGHT, PLAN_SCALE, STAIRS, levelCenter, openEdges, planToWorld, sofaParts, tableFor, viewpoint, viewpointAt, type Pt, type Sofa } from "./map-3d";
 
 const ids = Object.keys(MAP_SECTORS) as MapSectorId[];
 
@@ -208,6 +208,59 @@ describe("geometría 3D del mapa", () => {
     expect(inside([medio, box.y - 5], LEVEL_FLOORS[1])).toBe(true); // llega al borde del entrepiso
     expect(inside([medio, box.y + 5], LEVEL_FLOORS[1])).toBe(false);
     expect(inside([box.x + box.w / 2, box.y + box.h / 2], LEVEL_FLOORS[0])).toBe(true); // sube desde la pista
+  });
+
+  it("desde cada sector se ve la pista: ojos arriba del sector, dentro de él, y mirada hacia la pista", () => {
+    const [pistaX, pistaZ] = planToWorld(levelCenter(0));
+    for (const id of ids) {
+      const { eye, look } = viewpoint(id);
+      const { level, height, points } = SECTOR_SHAPES[id];
+      expect(eye[1], id).toBeGreaterThan(LEVEL_HEIGHT[level] + height);
+      // los ojos caen dentro del sector (se vuelve del mundo al plano)
+      const plano: Pt = [eye[0] / PLAN_SCALE + 400, eye[2] / PLAN_SCALE + 480];
+      expect(inside(plano, points), `${id} ojos dentro del sector`).toBe(true);
+      expect([look[0], look[2]], id).toEqual([pistaX, pistaZ]);
+      expect(Math.hypot(look[0] - eye[0], look[2] - eye[2]), id).toBeGreaterThan(3);
+    }
+  });
+
+  it("en los boxes la vista es desde el borde que da a la pista, no desde el fondo contra la pared", () => {
+    for (const id of ["box-1", "box-2", "box-3", "box-4", "box-5"] as const) {
+      const { eye } = viewpoint(id);
+      const x = eye[0] / PLAN_SCALE + 400;
+      const bordeX = Math.max(...SECTOR_SHAPES[id].points.map((p) => p[0]));
+      expect(bordeX - x, id).toBeLessThanOrEqual(6); // pegado al borde de la pista
+    }
+  });
+
+  it("en el golden (y demás sectores amplios) la vista sale del punto tocado; en un box, siempre del borde", () => {
+    const punto: [number, number] = planToWorld([700, 300]);
+    expect(viewpoint("golden", punto).eye.slice(0, 1).concat(viewpoint("golden", punto).eye[2])).toEqual(punto);
+    expect(viewpoint("golden", planToWorld([500, 100])).eye[0]).not.toBe(viewpoint("golden", punto).eye[0]);
+    expect(viewpoint("box-1", punto).eye).toEqual(viewpoint("box-1").eye);
+  });
+
+  it("la puerta de la baranda de la cabina está al medio y la baranda cubre el resto de su lado oeste", () => {
+    const cabina = PROPS.cabina.points;
+    const medio = (cabina[0][1] + cabina[2][1]) / 2;
+    expect(PUERTA_CABINA.y + PUERTA_CABINA.h / 2).toBeCloseTo(medio);
+    const [antes, despues] = BARANDA_CABINA;
+    expect(antes[0][1]).toBe(cabina[0][1]);
+    expect(antes[1][1]).toBe(PUERTA_CABINA.y);
+    expect(despues[0][1]).toBe(PUERTA_CABINA.y + PUERTA_CABINA.h);
+    expect(despues[1][1]).toBe(cabina[2][1]);
+    expect(antes[0][0]).toBe(cabina[0][0]); // pegada al lado oeste de la cabina
+  });
+
+  it("desde un punto de un piso los ojos quedan a la altura de ese piso, mirando a la pista (o a la cabina desde la pista)", () => {
+    const [pistaX, pistaZ] = planToWorld(levelCenter(0));
+    const arriba = viewpointAt(2, -20, 10);
+    expect(arriba.eye[1]).toBeCloseTo(LEVEL_HEIGHT[2] + EYE_HEIGHT);
+    expect([arriba.look[0], arriba.look[2]]).toEqual([pistaX, pistaZ]);
+    const enPista = viewpointAt(0, pistaX + 10, pistaZ);
+    expect(enPista.eye[1]).toBeCloseTo(EYE_HEIGHT);
+    const [cx, cz] = planToWorld([377.5, 752.5]);
+    expect([enPista.look[0], enPista.look[2]]).toEqual([cx, cz]); // desde la pista se mira a la cabina
   });
 
   it("el plano se centra en el origen del mundo", () => {

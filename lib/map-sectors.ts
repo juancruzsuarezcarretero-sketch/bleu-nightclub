@@ -97,7 +97,7 @@ const TABLE_INCLUDES = [
 export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   golden: {
     id: "golden",
-    name: "Golden",
+    name: "Golden — Palco 1",
     type: "mesa",
     typeLabel: "Mesa con sillones",
     pricePerPerson: 35000,
@@ -201,7 +201,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-1": {
     id: "ultra-box-1",
-    name: "Ultra Box 2 — Palco 2",
+    name: "Box 2",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,
@@ -216,7 +216,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-2": {
     id: "ultra-box-2",
-    name: "Ultra Box 3 — Palco 2",
+    name: "Box 3",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,
@@ -231,7 +231,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-3": {
     id: "ultra-box-3",
-    name: "Ultra Box 4 — Palco 3",
+    name: "Box 4",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,

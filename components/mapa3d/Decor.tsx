@@ -102,12 +102,12 @@ export function PistaLights({ opacity }: { opacity: number }) {
 
 const POST_GAP = 2.4;
 
-/** Baranda de caño negro (postes y dos barandas) en los bordes de un piso que dan al vacío. */
-export function Railing({ points, base, opacity, gaps = [] }: { points: Pt[]; base: number; opacity: number; gaps?: Box[] }) {
+/** Baranda de caño negro (postes y dos barandas) en los bordes de un piso que dan al vacío, o en los `segments` que se indiquen. */
+export function Railing({ points = [], segments, base, opacity, gaps = [] }: { points?: Pt[]; segments?: [Pt, Pt][]; base: number; opacity: number; gaps?: Box[] }) {
   const edges = useMemo(() => {
     const libre = ([x, y]: Pt) => !gaps.some((g) => x >= g.x && x <= g.x + g.w && y >= g.y && y <= g.y + g.h);
     // Cada borde se corta en tramos y se descartan los que pasan por una escalera (ahí hay que poder subir)
-    return openEdges(points).flatMap(([a, b]) => {
+    return (segments ?? openEdges(points)).flatMap(([a, b]) => {
       const n = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) * PLAN_SCALE / POST_GAP));
       const tramos: (readonly [[number, number], [number, number]])[] = [];
       for (let i = 0; i < n; i++) {
@@ -117,7 +117,7 @@ export function Railing({ points, base, opacity, gaps = [] }: { points: Pt[]; ba
       }
       return tramos;
     });
-  }, [points, gaps]);
+  }, [points, segments, gaps]);
 
   const posts = useMemo(() => {
     const out: [number, number][] = [];

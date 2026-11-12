@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { MAP_SECTORS, type MapSectorId } from "@/lib/map-sectors";
 import { MAP_LEVELS } from "@/lib/map-levels";
 import {
+  BARANDA_CABINA,
   CABINA_PLATFORM,
   DIVIDERS,
   LEVEL_FLOORS,
@@ -12,6 +13,7 @@ import {
   LOCAL_BOUNDS,
   PLAN_SCALE,
   PROPS,
+  PUERTA_CABINA,
   SECTOR_SHAPES,
   SOFAS,
   STAIRS,
@@ -19,6 +21,7 @@ import {
   sofaParts,
   tableFor,
   type Pt,
+  type Vista,
 } from "@/lib/map-3d";
 import { Block, SurfaceMaterial, worldCenter } from "@/components/mapa3d/Block";
 import { Label } from "@/components/mapa3d/Label";
@@ -33,7 +36,8 @@ const STEPS = 8;
 const RELIEF = 1.4;
 const WOOD = "#3a2412";
 const AMBER = "#f5a300";
-const RED_NEON = "#ff2a3d";
+// La cabina es del cuarto piso: lleva su color (violeta)
+const CABINA_COLOR = MAP_LEVELS[3].accent;
 // Sillones y mesas negros, como los de los palcos y boxes del local
 const SOFA_SEAT = "#26262d";
 const SOFA_BACK = "#17171c";
@@ -127,17 +131,23 @@ export interface MapaScene3DProps {
   precios: Record<MapSectorId, string>;
   selectedId: MapSectorId | null;
   focus: number | null;
-  onSelect: (id: MapSectorId) => void;
-  onFocusLevel: (level: number) => void;
+  /** Desde dónde se mira: la cámara se para ahí, a la altura de los ojos. null = mapa completo. */
+  vista: Vista | null;
+  /** Clic en un sector: pasa el punto del mundo donde se hizo. */
+  onSelect: (id: MapSectorId, x: number, z: number) => void;
+  /** Clic en el suelo de un piso: pasa el piso y el punto del mundo donde se hizo. */
+  onViewFloor: (level: number, x: number, z: number) => void;
 }
 
-function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene3DProps) {
+function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: MapaScene3DProps) {
+  const viewFrom = vista !== null;
   const [hoveredId, setHoveredId] = useState<MapSectorId | null>(null);
   // Relieve: los sectores arrancan abultados y se aplanan suavemente apenas el usuario gira la cámara
   const [relief, setRelief] = useState(1);
   const [rotated, setRotated] = useState(false);
+  const aplanar = rotated || viewFrom;
   useEffect(() => {
-    if (!rotated) return;
+    if (!aplanar) return;
     let raf = 0;
     const tick = () => {
       setRelief((r) => {
@@ -148,9 +158,11 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [rotated]);
+  }, [aplanar]);
   const bump = (h: number) => h * (1 + RELIEF * relief);
-  const opacity = (level: number) => (focus === null || focus === level ? 1 : DIM_OPACITY);
+  // Parado en un sector se ve todo el local sin atenuar ningún piso
+  const dim = viewFrom ? null : focus;
+  const opacity = (level: number) => (dim === null || dim === level ? 1 : DIM_OPACITY);
   const tile = useCanvasTexture(makeTileTexture);
   const plate = useCanvasTexture(makePlateTexture);
   const bottles = useCanvasTexture(makeBottlesTexture);
@@ -192,12 +204,12 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         roughness={0.3}
         opacity={opacity(0)}
         edge="#ffffff"
-        onClick={() => onFocusLevel(0)}
+        onClick={(p) => onViewFloor(0, p.x, p.z)}
         onOver={() => over(null)}
         onOut={out}
       />
       <PistaLights opacity={opacity(0)} />
-      {focus === 0 && (() => {
+      {!viewFrom && focus === 0 && (() => {
         const [x, z] = worldCenter(LEVEL_FLOORS[0]);
         return <Label position={[x, 1.2, z]} title="PISTA PRINCIPAL" />;
       })()}
@@ -215,11 +227,11 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
             roughness={0.5}
             opacity={opacity(level)}
             edge={MAP_LEVELS[level].accent}
-            onClick={() => onFocusLevel(level)}
+            onClick={(p) => onViewFloor(level, p.x, p.z)}
             onOver={() => over(null)}
             onOut={out}
           />
-          <Railing points={LEVEL_FLOORS[level]} base={LEVEL_HEIGHT[level]} opacity={opacity(level)} gaps={STAIR_GAPS} />
+          <Railing points={LEVEL_FLOORS[level]} base={LEVEL_HEIGHT[level]} opacity={opacity(level)} gaps={level === 2 ? [...STAIR_GAPS, PUERTA_CABINA] : STAIR_GAPS} />
           <NeonEdge points={LEVEL_FLOORS[level]} base={LEVEL_HEIGHT[level]} color={MAP_LEVELS[level].accent} opacity={opacity(level)} />
         </group>
       ))}
@@ -232,9 +244,10 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         metalness={0.6}
         roughness={0.5}
         opacity={opacity(CABINA_PLATFORM.level)}
-        edge={RED_NEON}
+        edge={CABINA_COLOR}
       />
-      <NeonEdge points={CABINA_PLATFORM.points} base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation]} color={RED_NEON} opacity={opacity(CABINA_PLATFORM.level)} />
+      <NeonEdge points={CABINA_PLATFORM.points} base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation]} color={CABINA_COLOR} opacity={opacity(CABINA_PLATFORM.level)} />
+      <Railing segments={BARANDA_CABINA} base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation]} opacity={opacity(CABINA_PLATFORM.level)} />
       <Columns opacity={opacity} />
       <Stairs opacity={opacity} />
 
@@ -250,10 +263,10 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
               base={base}
               depth={prop.height}
               color={WOOD}
-              emissive={AMBER}
-              emissiveIntensity={key === "cabina" ? 0.18 : 0.1}
+              emissive={key === "cabina" ? CABINA_COLOR : AMBER}
+              emissiveIntensity={key === "cabina" ? 0.35 : 0.1}
               opacity={o}
-              edge={AMBER}
+              edge={key === "cabina" ? CABINA_COLOR : AMBER}
             />
             {prop.shelf && (
               <Block
@@ -270,7 +283,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
               />
             )}
             {/* La cabina no se reserva pero es la referencia del local: su etiqueta se ve siempre */}
-            {(key === "cabina" || focus === prop.level) && (
+            {(key === "cabina" || (!viewFrom && focus === prop.level)) && (
               <Label position={[cx, base + prop.height + 0.8, cz]} title={prop.label.toUpperCase()} titleColor={AMBER} />
             )}
           </group>
@@ -293,7 +306,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         const lift = selected ? 0.25 : 0;
         const alto = bump(shape.height);
         const [cx, cz] = worldCenter(shape.points);
-        const showLabel = selected || hovered || focus === shape.level;
+        const showLabel = !viewFrom && (selected || hovered || focus === shape.level);
         return (
           <group key={id}>
             <Block
@@ -306,7 +319,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
               opacity={opacity(shape.level)}
               edge={selected ? "#ffffff" : cfg.accent}
               roughness={0.45}
-              onClick={() => onSelect(id)}
+              onClick={(p) => onSelect(id, p.x, p.z)}
               onOver={() => over(id)}
               onOut={out}
             />
@@ -344,7 +357,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         );
       })}
 
-      <CameraRig focus={focus} onUserRotate={() => setRotated(true)} />
+      <CameraRig focus={focus} vista={vista} onUserRotate={() => setRotated(true)} />
     </>
   );
 }
@@ -354,7 +367,7 @@ export default function MapaScene3D(props: MapaScene3DProps) {
     <Canvas
       frameloop="demand"
       dpr={[1, 2]}
-      camera={{ position: [0, 70, 95], fov: 32, near: 1, far: 400 }}
+      camera={{ position: [0, 70, 95], fov: 32, near: 0.3, far: 400 }}
       gl={{ alpha: true, antialias: true }}
     >
       <Scene {...props} />
