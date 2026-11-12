@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAP_SECTORS, type MapSectorId } from "./map-sectors";
 import { levelOfSector, MAP_LEVELS } from "./map-levels";
-import { CABINA_PLATFORM, LEVEL_FLOORS, LEVEL_HEIGHT, PROPS, SECTOR_SHAPES, STAIRS, levelCenter, planToWorld, type Pt } from "./map-3d";
+import { CABINA_PLATFORM, LEVEL_FLOORS, LEVEL_HEIGHT, PROPS, SECTOR_SHAPES, SOFAS, STAIRS, levelCenter, planToWorld, type Pt } from "./map-3d";
 
 const ids = Object.keys(MAP_SECTORS) as MapSectorId[];
 
@@ -90,6 +90,13 @@ describe("geometría 3D del mapa", () => {
   it("la cabina lleva etiqueta y el resto de elementos también", () => {
     expect(PROPS.cabina.label).toBe("Cabina");
     for (const prop of Object.values(PROPS)) expect(prop.label.length).toBeGreaterThan(0);
+  });
+
+  it("cada sillón está dentro del sector al que pertenece", () => {
+    for (const [id, sillones] of Object.entries(SOFAS) as [MapSectorId, Pt[][]][]) {
+      expect(SECTOR_SHAPES[id], id).toBeDefined();
+      for (const sillon of sillones) expect(inside(centroide(sillon), SECTOR_SHAPES[id].points), id).toBe(true);
+    }
   });
 
   it("el plano se centra en el origen del mundo", () => {

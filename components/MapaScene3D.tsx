@@ -13,6 +13,7 @@ import {
   PLAN_SCALE,
   PROPS,
   SECTOR_SHAPES,
+  SOFAS,
   STAIRS,
   levelCenter,
   planToWorld,
@@ -25,6 +26,7 @@ const STEPS = 8;
 const STEEL = "#8a8f98";
 const WOOD = "#3a2412";
 const AMBER = "#f5a300";
+const SOFA = "#9c8466";
 
 const IDS = Object.keys(SECTOR_SHAPES) as MapSectorId[];
 
@@ -160,6 +162,40 @@ function LabelSprite({ position, title, subtitle, titleColor = "#F0F0F0", subtit
 function Label(props: LabelProps) {
   const fontsReady = useSyncExternalStore(subscribeFonts, fontsLoaded, () => false);
   return fontsReady ? <LabelSprite {...props} /> : null;
+}
+
+/** Paredes de ladrillo del local: solo se ven las caras de adentro, así no tapan al girar el mapa. */
+function BrickWalls() {
+  const map = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    const g = canvas.getContext("2d")!;
+    g.fillStyle = "#1a0f0b"; // mortero
+    g.fillRect(0, 0, 256, 256);
+    const filas = 16, alto = 256 / filas, ancho = 64;
+    for (let r = 0; r < filas; r++) {
+      const desfase = r % 2 ? ancho / 2 : 0;
+      for (let x = -ancho; x < 256 + ancho; x += ancho) {
+        const tono = 50 + (((r * 7 + Math.floor((x + desfase) / ancho) * 13) % 5 + 5) % 5) * 6;
+        g.fillStyle = `rgb(${tono + 35}, ${tono - 5}, ${tono - 15})`;
+        g.fillRect(x + desfase + 1, r * alto + 1, ancho - 2, alto - 2);
+      }
+    }
+    const t = new THREE.CanvasTexture(canvas);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(10, 2.2);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }, []);
+  useEffect(() => () => map.dispose(), [map]);
+
+  return (
+    <mesh position={[0, 9.6, 0]} raycast={() => null}>
+      <boxGeometry args={[78, 20, 94]} />
+      <meshStandardMaterial map={map} side={THREE.BackSide} roughness={1} />
+    </mesh>
+  );
 }
 
 function Stairs({ opacity }: { opacity: (level: number) => number }) {
@@ -313,6 +349,8 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         <meshStandardMaterial color="#10101a" metalness={0.4} roughness={0.8} />
       </mesh>
 
+      <BrickWalls />
+
       {/* Pista principal (piso 1) */}
       <Block
         points={LEVEL_FLOORS[0]}
@@ -422,6 +460,18 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
               onOver={() => over(id)}
               onOut={out}
             />
+            {SOFAS[id]?.map((puntos, i) => (
+              <Block
+                key={i}
+                points={puntos}
+                base={base + shape.height + (selected ? 0.25 : 0)}
+                depth={0.9}
+                color={SOFA}
+                roughness={0.95}
+                metalness={0}
+                opacity={opacity(shape.level)}
+              />
+            ))}
             {showLabel && (
               <Label position={[cx, base + shape.height + 0.9, cz]} title={cfg.name.toUpperCase()} subtitle={precios[id]} subtitleColor={cfg.accent} />
             )}

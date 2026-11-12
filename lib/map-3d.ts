@@ -46,6 +46,19 @@ export const SECTOR_SHAPES: Record<MapSectorId, SectorShape> = {
   backstage: { level: 3, height: BOX_H, points: rect(220, 803, 337, 102) },
 };
 
+/** Sillones sobre cada sector, en las mismas posiciones que tenían en el plano 2D. */
+export const SOFAS: Partial<Record<MapSectorId, Pt[][]>> = {
+  golden: [rect(360, 62, 42, 32), rect(412, 62, 42, 32), rect(671, 185, 38, 32), rect(671, 245, 38, 32), rect(671, 305, 38, 32)],
+  "box-1": [rect(148, 365, 36, 30)],
+  "box-2": [rect(148, 431, 36, 30)],
+  "box-3": [rect(148, 497, 36, 30)],
+  "box-4": [rect(148, 563, 36, 30)],
+  "box-5": [rect(148, 629, 36, 30)],
+  "ultra-box-1": [rect(694, 376, 30, 40)],
+  "ultra-box-2": [rect(694, 476, 30, 40)],
+  "ultra-box-3": [rect(694, 576, 30, 40)],
+};
+
 /** Suelo de cada piso. El nivel 0 es la pista; el resto son entrepisos que la rodean. */
 export const LEVEL_FLOORS: Pt[][] = [
   [[198, 350], [470, 350], [525, 405], [525, 705], [245, 705], [198, 658]],
