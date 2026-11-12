@@ -203,6 +203,7 @@ describe("geometría 3D del mapa", () => {
     const { box } = STAIRS.find((s) => s.from === 0 && s.to === 1)!;
     expect(box.w).toBeGreaterThanOrEqual(80);
     expect(box.h).toBeGreaterThanOrEqual(70);
+    expect(box.x).toBeGreaterThanOrEqual(Math.max(...LEVEL_FLOORS[2].map((p) => p[0]))); // no queda bajo el piso azul
     const medio = box.x + box.w / 2;
     expect(inside([medio, box.y - 5], LEVEL_FLOORS[1])).toBe(true); // llega al borde del entrepiso
     expect(inside([medio, box.y + 5], LEVEL_FLOORS[1])).toBe(false);

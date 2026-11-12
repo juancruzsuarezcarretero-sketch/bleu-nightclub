@@ -114,7 +114,8 @@ export default function MapaVIP() {
           </div>
         )}
 
-        {/* Lista de sectores: alternativa por teclado y respaldo si el 3D no carga */}
+        {/* Sin WebGL no hay mapa 3D: la lista de sectores es la única forma de reservar */}
+        {!webgl && (
         <FadeIn delay={0.2}>
           <div className="mx-auto mt-10 grid max-w-4xl gap-x-8 gap-y-5 sm:grid-cols-2">
             {[...MAP_LEVELS].reverse().map((lv) => (
@@ -151,6 +152,7 @@ export default function MapaVIP() {
             ))}
           </div>
         </FadeIn>
+        )}
       </div>
 
       <SectorReservationPanel selection={panelSelection} isOpen={panelOpen} onClose={() => setPanelOpen(false)} />

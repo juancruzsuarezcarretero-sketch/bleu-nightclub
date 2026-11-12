@@ -138,8 +138,8 @@ export interface PropShape {
 export const PROPS: Record<PropId, PropShape> = {
   // Barra del entrepiso: rectangular (en el plano 2D original era un trapecio)
   barraCanada: { label: "Barra Cañada", level: 1, elevation: 1, points: rect(150, 50, 190, 115), height: 1.1, shelf: rect(150, 50, 190, 8) },
-  // Abajo del piso 4: otra barra, a la altura del entrepiso
-  barraBaja: { label: "Barra", level: 1, elevation: 1, points: rect(690, 640, 35, 95), height: 1.1, shelf: rect(717, 640, 8, 95) },
+  // Abajo del piso 4: otra barra, a la altura del entrepiso, desde donde termina el golden VIP (y=350) hasta el fondo del entrepiso
+  barraBaja: { label: "Barra", level: 1, elevation: 1, points: rect(690, 350, 35, 385), height: 1.1, shelf: rect(717, 350, 8, 385) },
   barraUltra: { label: "Barra", level: 3, elevation: 3, points: rect(685, 745, 40, 150), height: 1.1, shelf: rect(717, 745, 8, 150) },
   // No se vende, pero marca el lugar del DJ: lleva etiqueta fija
   cabina: { label: "Cabina", level: 3, elevation: 2, points: rect(245, 705, 265, 95), height: 1.2 },
@@ -164,7 +164,8 @@ export interface StairRun {
 }
 
 export const STAIRS: StairRun[] = [
-  { box: { x: 170, y: 350, w: 80, h: 70 }, from: 0, to: 1, axis: "y", dir: -1 },
+  // Arranca en el margen derecho del piso azul (x=245) y sigue hacia la derecha, para no quedar debajo de él
+  { box: { x: 245, y: 350, w: 80, h: 70 }, from: 0, to: 1, axis: "y", dir: -1 },
   { box: { x: 70, y: 292, w: 130, h: 58 }, from: 1, to: 2, axis: "y", dir: 1 },
   // Después de la cabina: sube de su altura (piso 3) al piso 4
   { box: { x: 510, y: 745, w: 47, h: 55 }, from: 2, to: 3, axis: "x", dir: 1 },
