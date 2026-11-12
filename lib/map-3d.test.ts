@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAP_SECTORS, type MapSectorId } from "./map-sectors";
 import { levelOfSector, MAP_LEVELS } from "./map-levels";
-import { CABINA_PLATFORM, LEVEL_FLOORS, LEVEL_HEIGHT, PROPS, SECTOR_SHAPES, levelCenter, planToWorld, type Pt } from "./map-3d";
+import { CABINA_PLATFORM, LEVEL_FLOORS, LEVEL_HEIGHT, PROPS, SECTOR_SHAPES, STAIRS, levelCenter, planToWorld, type Pt } from "./map-3d";
 
 const ids = Object.keys(MAP_SECTORS) as MapSectorId[];
 
@@ -58,6 +58,38 @@ describe("geometría 3D del mapa", () => {
     expect(inside(centro, LEVEL_FLOORS[3])).toBe(false);
     expect(inside(centro, CABINA_PLATFORM.points)).toBe(true);
     expect(LEVEL_HEIGHT[CABINA_PLATFORM.elevation]).toBe(LEVEL_HEIGHT[2]);
+  });
+
+  it("la escalera después de la cabina sube al piso 4 y no queda tapada por su suelo", () => {
+    const escalera = STAIRS.find((s) => s.from === 2 && s.to === 3);
+    expect(escalera).toBeDefined();
+    const { box } = escalera!;
+    expect(box.x).toBe(510); // arranca donde termina la cabina
+    const medio: Pt = [box.x + box.w / 2, box.y + box.h / 2];
+    expect(inside(medio, LEVEL_FLOORS[3])).toBe(false); // hueco en el suelo del piso 4
+    expect(inside([box.x + 5, medio[1]], CABINA_PLATFORM.points)).toBe(false); // y fuera de la cabina misma
+    expect(inside([box.x + box.w + 5, medio[1]], LEVEL_FLOORS[3])).toBe(true); // llega al suelo del piso 4
+    expect(LEVEL_HEIGHT[escalera!.from]).toBe(LEVEL_HEIGHT[CABINA_PLATFORM.elevation]);
+  });
+
+  it("el piso 4 empieza donde termina la escalera, sin adelantarse sobre los escalones", () => {
+    const { box } = STAIRS.find((s) => s.from === 2 && s.to === 3)!;
+    const finEscalera = box.x + box.w;
+    for (const y of [710, 725, 745, 770, 795]) {
+      expect(inside([finEscalera - 3, y], LEVEL_FLOORS[3]), `antes del final, y=${y}`).toBe(false);
+      expect(inside([finEscalera + 3, y], LEVEL_FLOORS[3]), `después del final, y=${y}`).toBe(true);
+    }
+  });
+
+  it("el rojo (backstage) se expandió hacia el azul y apoya en el suelo del piso 4", () => {
+    const xs = SECTOR_SHAPES.backstage.points.map((p) => p[0]);
+    expect(Math.min(...xs)).toBeLessThan(245);
+    expect(inside([230, 850], LEVEL_FLOORS[3])).toBe(true);
+  });
+
+  it("la cabina lleva etiqueta y el resto de elementos también", () => {
+    expect(PROPS.cabina.label).toBe("Cabina");
+    for (const prop of Object.values(PROPS)) expect(prop.label.length).toBeGreaterThan(0);
   });
 
   it("el plano se centra en el origen del mundo", () => {

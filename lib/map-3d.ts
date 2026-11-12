@@ -42,7 +42,8 @@ export const SECTOR_SHAPES: Record<MapSectorId, SectorShape> = {
   "ultra-box-2": { level: 3, height: BOX_H, points: rect(637, 450, 93, 92) },
   "ultra-box-3": { level: 3, height: BOX_H, points: rect(637, 550, 93, 92) },
   "ultra-standing": { level: 3, height: STANDING_H, points: [[637, 646], [730, 646], [730, 905], [557, 905], [557, 803], [637, 803]] },
-  backstage: { level: 3, height: BOX_H, points: rect(245, 803, 312, 102) },
+  // Se expande hacia el lado del azul (el plano original llegaba hasta x=245)
+  backstage: { level: 3, height: BOX_H, points: rect(220, 803, 337, 102) },
 };
 
 /** Suelo de cada piso. El nivel 0 es la pista; el resto son entrepisos que la rodean. */
@@ -51,8 +52,8 @@ export const LEVEL_FLOORS: Pt[][] = [
   rect(60, 50, 670, 300),
   // El piso azul termina donde terminan los sectores: boxes hasta x=198 y el standing hasta x=245
   [[70, 350], [198, 350], [198, 680], [220, 680], [245, 705], [245, 905], [70, 905]],
-  // Sin el hueco de la cabina, que está más abajo (a la altura del piso 3)
-  [[637, 350], [730, 350], [730, 905], [245, 905], [245, 800], [510, 800], [510, 705], [637, 705]],
+  // Sin el hueco de la cabina (más abajo, a la altura del piso 3) ni el de su escalera: el piso 4 empieza donde la escalera termina (x=557)
+  [[637, 350], [730, 350], [730, 905], [220, 905], [220, 800], [557, 800], [557, 705], [637, 705]],
 ];
 
 /**
@@ -60,9 +61,10 @@ export const LEVEL_FLOORS: Pt[][] = [
  * `level` es el piso del plano en que se muestran; `elevation` es el piso cuya altura ocupan.
  */
 export const PROPS = {
-  barraCanada: { level: 1, elevation: 1, points: [[150, 50], [340, 50], [340, 165], [95, 165]] as Pt[], height: 1.1 },
-  barraUltra: { level: 3, elevation: 3, points: rect(685, 745, 40, 150), height: 1.1 },
-  cabina: { level: 3, elevation: 2, points: rect(245, 705, 265, 95), height: 1.2 },
+  barraCanada: { label: "Barra Cañada", level: 1, elevation: 1, points: [[150, 50], [340, 50], [340, 165], [95, 165]] as Pt[], height: 1.1 },
+  barraUltra: { label: "Barra", level: 3, elevation: 3, points: rect(685, 745, 40, 150), height: 1.1 },
+  // No se vende, pero marca el lugar del DJ: lleva etiqueta fija
+  cabina: { label: "Cabina", level: 3, elevation: 2, points: rect(245, 705, 265, 95), height: 1.2 },
 };
 
 /** La cabina se ve en el plano del piso 4, pero está a la altura del piso 3: lleva su propia plataforma. */
@@ -73,13 +75,17 @@ export interface StairRun {
   box: { x: number; y: number; w: number; h: number };
   from: number;
   to: number;
-  /** Sentido en que sube: -1 hacia arriba del plano (y decrece), 1 hacia abajo. */
+  /** Eje del plano en que corren los escalones. */
+  axis: "x" | "y";
+  /** Sentido en que sube sobre ese eje: -1 hacia donde decrece la coordenada, 1 hacia donde crece. */
   dir: -1 | 1;
 }
 
 export const STAIRS: StairRun[] = [
-  { box: { x: 200, y: 350, w: 50, h: 42 }, from: 0, to: 1, dir: -1 },
-  { box: { x: 70, y: 292, w: 130, h: 58 }, from: 1, to: 2, dir: 1 },
+  { box: { x: 200, y: 350, w: 50, h: 42 }, from: 0, to: 1, axis: "y", dir: -1 },
+  { box: { x: 70, y: 292, w: 130, h: 58 }, from: 1, to: 2, axis: "y", dir: 1 },
+  // Después de la cabina: sube de su altura (piso 3) al piso 4
+  { box: { x: 510, y: 745, w: 47, h: 55 }, from: 2, to: 3, axis: "x", dir: 1 },
 ];
 
 /** Centro (en el plano) de cada piso, para apuntar la cámara. */

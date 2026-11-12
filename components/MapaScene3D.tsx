@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ComponentRef } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ComponentRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
+import { Edges, Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { MAP_SECTORS, type MapSectorId } from "@/lib/map-sectors";
 import { MAP_LEVELS } from "@/lib/map-levels";
@@ -10,6 +10,7 @@ import {
   CABINA_PLATFORM,
   LEVEL_FLOORS,
   LEVEL_HEIGHT,
+  PLAN_SCALE,
   PROPS,
   SECTOR_SHAPES,
   STAIRS,
@@ -85,14 +86,80 @@ function Block({ points, base, depth, color, emissive, emissiveIntensity = 0, op
   );
 }
 
-function Label({ position, children }: { position: [number, number, number]; children: React.ReactNode }) {
+const subscribeFonts = (cb: () => void) => {
+  document.fonts.addEventListener("loadingdone", cb);
+  return () => document.fonts.removeEventListener("loadingdone", cb);
+};
+const fontsLoaded = () => document.fonts.status === "loaded";
+const cssVar = (name: string) => getComputedStyle(document.body).getPropertyValue(name).trim();
+
+/** Alto en pantalla (fracción de la altura del canvas, sin el factor de la cámara) por cada píxel de la etiqueta. */
+const LABEL_SCALE = 0.00034;
+
+interface LabelProps {
+  position: [number, number, number];
+  title: string;
+  subtitle?: string;
+  titleColor?: string;
+  subtitleColor?: string;
+}
+
+function LabelSprite({ position, title, subtitle, titleColor = "#F0F0F0", subtitleColor }: LabelProps) {
+  const { texture, width, height } = useMemo(() => {
+    const bebas = `${cssVar("--font-bebas") || "Bebas Neue"}, sans-serif`;
+    const mono = `${cssVar("--font-dm-mono") || "DM Mono"}, monospace`;
+    const titlePx = 56, subPx = 30, padX = 28, padY = 18, gap = 8;
+    const medidor = document.createElement("canvas").getContext("2d")!;
+    medidor.font = `${titlePx}px ${bebas}`;
+    let ancho = medidor.measureText(title).width;
+    if (subtitle) {
+      medidor.font = `${subPx}px ${mono}`;
+      ancho = Math.max(ancho, medidor.measureText(subtitle).width);
+    }
+    const w = Math.ceil(ancho + padX * 2);
+    const h = padY * 2 + titlePx + (subtitle ? gap + subPx : 0);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const g = canvas.getContext("2d")!;
+    g.fillStyle = "rgba(0,0,0,0.78)";
+    g.strokeStyle = "rgba(255,255,255,0.18)";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.roundRect(1, 1, w - 2, h - 2, 10);
+    g.fill();
+    g.stroke();
+    g.textAlign = "center";
+    g.textBaseline = "top";
+    g.font = `${titlePx}px ${bebas}`;
+    g.fillStyle = titleColor;
+    g.fillText(title, w / 2, padY);
+    if (subtitle) {
+      g.font = `${subPx}px ${mono}`;
+      g.fillStyle = subtitleColor ?? titleColor;
+      g.fillText(subtitle, w / 2, padY + titlePx + gap);
+    }
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return { texture: t, width: w, height: h };
+  }, [title, subtitle, titleColor, subtitleColor]);
+  useEffect(() => () => texture.dispose(), [texture]);
+
   return (
-    <Html position={position} center zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
-      <div className="whitespace-nowrap rounded border border-white/15 bg-black/75 px-2 py-1 text-center font-bebas tracking-wider text-[#F0F0F0] backdrop-blur-sm">
-        {children}
-      </div>
-    </Html>
+    <sprite position={position} scale={[width * LABEL_SCALE, height * LABEL_SCALE, 1]} renderOrder={10} raycast={() => null}>
+      <spriteMaterial map={texture} transparent depthTest={false} sizeAttenuation={false} />
+    </sprite>
   );
+}
+
+/**
+ * Etiqueta dibujada en el propio canvas (sprite): no usa DOM, así que no depende de `Html`
+ * y mantiene el mismo tamaño en pantalla aunque la cámara se acerque o se aleje.
+ * Espera a que las tipografías estén cargadas para dibujar con la de la marca.
+ */
+function Label(props: LabelProps) {
+  const fontsReady = useSyncExternalStore(subscribeFonts, fontsLoaded, () => false);
+  return fontsReady ? <LabelSprite {...props} /> : null;
 }
 
 function Stairs({ opacity }: { opacity: (level: number) => number }) {
@@ -101,16 +168,17 @@ function Stairs({ opacity }: { opacity: (level: number) => number }) {
       {STAIRS.map((s, k) => {
         const from = LEVEL_HEIGHT[s.from];
         const rise = LEVEL_HEIGHT[s.to] - from;
-        const run = s.box.h / STEPS;
-        const [cx] = worldCenter([[s.box.x, s.box.y], [s.box.x + s.box.w, s.box.y]]);
+        const alX = s.axis === "x";
+        const run = (alX ? s.box.w : s.box.h) / STEPS;
         const o = opacity(s.to);
         return Array.from({ length: STEPS }, (_, i) => {
           const h = (rise * (i + 1)) / STEPS;
-          const yPlan = s.dir === -1 ? s.box.y + s.box.h - (i + 0.5) * run : s.box.y + (i + 0.5) * run;
-          const [, z] = planToWorld([0, yPlan]);
+          // Distancia del escalón al borde bajo, medida sobre el eje de la escalera
+          const t = (s.dir === 1 ? i + 0.5 : STEPS - i - 0.5) * run;
+          const [x, z] = planToWorld(alX ? [s.box.x + t, s.box.y + s.box.h / 2] : [s.box.x + s.box.w / 2, s.box.y + t]);
           return (
-            <mesh key={`${k}-${i}`} position={[cx, from + h / 2, z]} raycast={() => null}>
-              <boxGeometry args={[s.box.w * 0.1, h, run * 0.1]} />
+            <mesh key={`${k}-${i}`} position={[x, from + h / 2, z]} raycast={() => null}>
+              <boxGeometry args={alX ? [run * PLAN_SCALE, h, s.box.h * PLAN_SCALE] : [s.box.w * PLAN_SCALE, h, run * PLAN_SCALE]} />
               <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.35} roughness={0.6} transparent={o < 1} opacity={o} depthWrite={o >= 1} />
             </mesh>
           );
@@ -270,7 +338,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
       })}
       {focus === 0 && (() => {
         const [x, z] = worldCenter(LEVEL_FLOORS[0]);
-        return <Label position={[x, 1.2, z]}><span className="text-lg">PISTA PRINCIPAL</span></Label>;
+        return <Label position={[x, 1.2, z]} title="PISTA PRINCIPAL" />;
       })()}
 
       {/* Entrepisos */}
@@ -306,19 +374,28 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
       <Stairs opacity={opacity} />
 
       {/* Barras y cabina */}
-      {Object.entries(PROPS).map(([key, prop]) => (
-        <Block
-          key={key}
-          points={prop.points}
-          base={LEVEL_HEIGHT[prop.elevation]}
-          depth={prop.height}
-          color={WOOD}
-          emissive={AMBER}
-          emissiveIntensity={key === "cabina" ? 0.18 : 0.1}
-          opacity={opacity(prop.level)}
-          edge={AMBER}
-        />
-      ))}
+      {Object.entries(PROPS).map(([key, prop]) => {
+        const [cx, cz] = worldCenter(prop.points);
+        const top = LEVEL_HEIGHT[prop.elevation] + prop.height;
+        return (
+          <group key={key}>
+            <Block
+              points={prop.points}
+              base={LEVEL_HEIGHT[prop.elevation]}
+              depth={prop.height}
+              color={WOOD}
+              emissive={AMBER}
+              emissiveIntensity={key === "cabina" ? 0.18 : 0.1}
+              opacity={opacity(prop.level)}
+              edge={AMBER}
+            />
+            {/* La cabina no se reserva pero es la referencia del local: su etiqueta se ve siempre */}
+            {(key === "cabina" || focus === prop.level) && (
+              <Label position={[cx, top + 0.8, cz]} title={prop.label.toUpperCase()} titleColor={AMBER} />
+            )}
+          </group>
+        );
+      })}
 
       {/* Sectores reservables */}
       {IDS.map((id) => {
@@ -346,10 +423,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
               onOut={out}
             />
             {showLabel && (
-              <Label position={[cx, base + shape.height + 0.9, cz]}>
-                <div className="text-sm leading-none">{cfg.name}</div>
-                <div className="mt-0.5 font-mono text-[9px] tracking-normal" style={{ color: cfg.accent }}>{precios[id]}</div>
-              </Label>
+              <Label position={[cx, base + shape.height + 0.9, cz]} title={cfg.name.toUpperCase()} subtitle={precios[id]} subtitleColor={cfg.accent} />
             )}
           </group>
         );
