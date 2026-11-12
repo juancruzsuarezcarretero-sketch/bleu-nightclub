@@ -49,16 +49,24 @@ export const SECTOR_SHAPES: Record<MapSectorId, SectorShape> = {
 export const LEVEL_FLOORS: Pt[][] = [
   [[198, 350], [470, 350], [525, 405], [525, 705], [245, 705], [198, 658]],
   rect(60, 50, 670, 300),
-  rect(70, 350, 175, 555),
-  [[637, 350], [730, 350], [730, 905], [245, 905], [245, 705], [637, 705]],
+  // El piso azul termina donde terminan los sectores: boxes hasta x=198 y el standing hasta x=245
+  [[70, 350], [198, 350], [198, 680], [220, 680], [245, 705], [245, 905], [70, 905]],
+  // Sin el hueco de la cabina, que está más abajo (a la altura del piso 3)
+  [[637, 350], [730, 350], [730, 905], [245, 905], [245, 800], [510, 800], [510, 705], [637, 705]],
 ];
 
-/** Elementos del local que no se reservan. */
+/**
+ * Elementos del local que no se reservan.
+ * `level` es el piso del plano en que se muestran; `elevation` es el piso cuya altura ocupan.
+ */
 export const PROPS = {
-  barraCanada: { level: 1, points: [[150, 50], [340, 50], [340, 165], [95, 165]] as Pt[], height: 1.1 },
-  barraUltra: { level: 3, points: rect(685, 745, 40, 150), height: 1.1 },
-  cabina: { level: 3, points: rect(245, 705, 265, 95), height: 1.2 },
+  barraCanada: { level: 1, elevation: 1, points: [[150, 50], [340, 50], [340, 165], [95, 165]] as Pt[], height: 1.1 },
+  barraUltra: { level: 3, elevation: 3, points: rect(685, 745, 40, 150), height: 1.1 },
+  cabina: { level: 3, elevation: 2, points: rect(245, 705, 265, 95), height: 1.2 },
 };
+
+/** La cabina se ve en el plano del piso 4, pero está a la altura del piso 3: lleva su propia plataforma. */
+export const CABINA_PLATFORM = { level: 3, elevation: 2, points: PROPS.cabina.points };
 
 export interface StairRun {
   /** Zona del plano que ocupa la escalera. */

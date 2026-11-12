@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { MAP_SECTORS, type MapSectorId } from "@/lib/map-sectors";
 import { MAP_LEVELS } from "@/lib/map-levels";
 import {
+  CABINA_PLATFORM,
   LEVEL_FLOORS,
   LEVEL_HEIGHT,
   PROPS,
@@ -110,7 +111,7 @@ function Stairs({ opacity }: { opacity: (level: number) => number }) {
           return (
             <mesh key={`${k}-${i}`} position={[cx, from + h / 2, z]} raycast={() => null}>
               <boxGeometry args={[s.box.w * 0.1, h, run * 0.1]} />
-              <meshStandardMaterial color="#2a2c33" metalness={0.5} roughness={0.5} transparent={o < 1} opacity={o} depthWrite={o >= 1} />
+              <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.35} roughness={0.6} transparent={o < 1} opacity={o} depthWrite={o >= 1} />
             </mesh>
           );
         });
@@ -119,17 +120,21 @@ function Stairs({ opacity }: { opacity: (level: number) => number }) {
   );
 }
 
-/** Columnas que sostienen cada entrepiso. */
+/** Columnas que sostienen cada entrepiso (y la plataforma de la cabina). */
 function Columns({ opacity }: { opacity: (level: number) => number }) {
+  const soportes = [
+    ...[1, 2, 3].map((level) => ({ points: LEVEL_FLOORS[level], elevation: level, level })),
+    CABINA_PLATFORM,
+  ];
   return (
     <>
-      {[1, 2, 3].flatMap((level) =>
-        LEVEL_FLOORS[level].map((p, i) => {
+      {soportes.flatMap(({ points, elevation, level }, k) =>
+        points.map((p, i) => {
           const [x, z] = planToWorld(p);
-          const top = LEVEL_HEIGHT[level] - FLOOR_THICKNESS;
+          const top = LEVEL_HEIGHT[elevation] - FLOOR_THICKNESS;
           const o = opacity(level);
           return (
-            <mesh key={`${level}-${i}`} position={[x, top / 2, z]} raycast={() => null}>
+            <mesh key={`${k}-${i}`} position={[x, top / 2, z]} raycast={() => null}>
               <cylinderGeometry args={[0.18, 0.18, top, 8]} />
               <meshStandardMaterial color="#1b1c22" metalness={0.6} roughness={0.5} transparent={o < 1} opacity={o} depthWrite={o >= 1} />
             </mesh>
@@ -287,6 +292,16 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
           <Rail points={LEVEL_FLOORS[level]} y={LEVEL_HEIGHT[level] + 0.9} opacity={opacity(level) * 0.8} />
         </group>
       ))}
+      <Block
+        points={CABINA_PLATFORM.points}
+        base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation] - FLOOR_THICKNESS}
+        depth={FLOOR_THICKNESS}
+        color="#23252f"
+        metalness={0.5}
+        roughness={0.5}
+        opacity={opacity(CABINA_PLATFORM.level)}
+        edge={MAP_LEVELS[CABINA_PLATFORM.level].accent}
+      />
       <Columns opacity={opacity} />
       <Stairs opacity={opacity} />
 
@@ -295,7 +310,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         <Block
           key={key}
           points={prop.points}
-          base={LEVEL_HEIGHT[prop.level]}
+          base={LEVEL_HEIGHT[prop.elevation]}
           depth={prop.height}
           color={WOOD}
           emissive={AMBER}

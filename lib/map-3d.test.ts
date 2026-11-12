@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAP_SECTORS, type MapSectorId } from "./map-sectors";
 import { levelOfSector, MAP_LEVELS } from "./map-levels";
-import { LEVEL_FLOORS, LEVEL_HEIGHT, SECTOR_SHAPES, levelCenter, planToWorld, type Pt } from "./map-3d";
+import { CABINA_PLATFORM, LEVEL_FLOORS, LEVEL_HEIGHT, PROPS, SECTOR_SHAPES, levelCenter, planToWorld, type Pt } from "./map-3d";
 
 const ids = Object.keys(MAP_SECTORS) as MapSectorId[];
 
@@ -37,6 +37,27 @@ describe("geometría 3D del mapa", () => {
       expect(points.length).toBeGreaterThanOrEqual(3);
       expect(inside(centroide(points), LEVEL_FLOORS[level]), id).toBe(true);
     }
+  });
+
+  it("el piso azul termina donde terminan los sectores azules", () => {
+    const azul = LEVEL_FLOORS[2];
+    expect(Math.max(...azul.map((p) => p[0]))).toBe(245); // el standing llega hasta x=245
+    expect(inside([220, 500], azul)).toBe(false); // al costado de los boxes (x 198 a 245) ya no hay piso
+    expect(inside([150, 500], azul)).toBe(true);
+    expect(inside([150, 800], azul)).toBe(true);
+    for (const id of ["box-1", "box-2", "box-3", "box-4", "box-5"] as const) {
+      for (const p of SECTOR_SHAPES[id].points) expect(p[0]).toBeLessThanOrEqual(198);
+    }
+  });
+
+  it("la cabina de DJ está a la altura del piso 3, se ve en el piso 4 y no pisa su suelo", () => {
+    expect(PROPS.cabina.elevation).toBe(2);
+    expect(PROPS.cabina.level).toBe(3);
+    expect(CABINA_PLATFORM.elevation).toBe(2);
+    const centro = centroide(PROPS.cabina.points);
+    expect(inside(centro, LEVEL_FLOORS[3])).toBe(false);
+    expect(inside(centro, CABINA_PLATFORM.points)).toBe(true);
+    expect(LEVEL_HEIGHT[CABINA_PLATFORM.elevation]).toBe(LEVEL_HEIGHT[2]);
   });
 
   it("el plano se centra en el origen del mundo", () => {
