@@ -1,202 +1,76 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ComponentRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Edges, Line, OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
+import { useEffect, useState } from "react";
+import { Canvas } from "@react-three/fiber";
 import { MAP_SECTORS, type MapSectorId } from "@/lib/map-sectors";
 import { MAP_LEVELS } from "@/lib/map-levels";
 import {
   CABINA_PLATFORM,
+  DIVIDERS,
   LEVEL_FLOORS,
   LEVEL_HEIGHT,
+  LOCAL_BOUNDS,
   PLAN_SCALE,
   PROPS,
   SECTOR_SHAPES,
   SOFAS,
   STAIRS,
-  levelCenter,
   planToWorld,
+  sofaParts,
+  tableFor,
   type Pt,
 } from "@/lib/map-3d";
+import { Block, SurfaceMaterial, worldCenter } from "@/components/mapa3d/Block";
+import { Label } from "@/components/mapa3d/Label";
+import { CameraRig } from "@/components/mapa3d/CameraRig";
+import { BrickWalls, NeonEdge, PistaLights, Railing, WallGlows, WallLogo, type WallGlowSpot } from "@/components/mapa3d/Decor";
+import { makeBottlesTexture, makePlateTexture, makeTileTexture, useCanvasTexture } from "@/components/mapa3d/textures";
 
 const FLOOR_THICKNESS = 0.3;
 const DIM_OPACITY = 0.14;
 const STEPS = 8;
-const STEEL = "#8a8f98";
+/** Cuánto más altos se ven los sectores antes de girar el mapa (1 = el doble). */
+const RELIEF = 1.4;
 const WOOD = "#3a2412";
 const AMBER = "#f5a300";
-const SOFA = "#9c8466";
+const RED_NEON = "#ff2a3d";
+// Sillones y mesas negros, como los de los palcos y boxes del local
+const SOFA_SEAT = "#26262d";
+const SOFA_BACK = "#17171c";
+const TABLE = "#0e0e12";
 
 const IDS = Object.keys(SECTOR_SHAPES) as MapSectorId[];
 
-/** Centro (en el mundo) de una lista de puntos del plano. */
-function worldCenter(points: Pt[]): [number, number] {
-  const w = points.map(planToWorld);
-  const xs = w.map((p) => p[0]);
-  const zs = w.map((p) => p[1]);
-  return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...zs) + Math.max(...zs)) / 2];
-}
-
-interface BlockProps {
-  points: Pt[];
-  base: number;
-  depth: number;
-  color: string;
-  emissive?: string;
-  emissiveIntensity?: number;
-  opacity?: number;
-  edge?: string;
-  metalness?: number;
-  roughness?: number;
-  onClick?: () => void;
-  onOver?: () => void;
-  onOut?: () => void;
-}
-
-/** Volumen extruido a partir de un polígono del plano, apoyado en `base` y de alto `depth`. */
-function Block({ points, base, depth, color, emissive, emissiveIntensity = 0, opacity = 1, edge, metalness = 0.2, roughness = 0.7, onClick, onOver, onOut }: BlockProps) {
-  const geometry = useMemo(() => {
-    const shape = new THREE.Shape(points.map((p) => planToWorld(p)).map(([x, z]) => new THREE.Vector2(x, -z)));
-    return new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
-  }, [points, depth]);
-  useEffect(() => () => geometry.dispose(), [geometry]);
-
-  const interactive = Boolean(onClick);
-  return (
-    <mesh
-      geometry={geometry}
-      position={[0, base, 0]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      onClick={interactive ? (e) => { e.stopPropagation(); onClick?.(); } : undefined}
-      onPointerOver={interactive ? (e) => { e.stopPropagation(); onOver?.(); } : undefined}
-      onPointerOut={interactive ? () => onOut?.() : undefined}
-      raycast={interactive ? undefined : () => null}
-    >
-      <meshStandardMaterial
-        color={color}
-        emissive={emissive ?? "#000000"}
-        emissiveIntensity={emissiveIntensity}
-        metalness={metalness}
-        roughness={roughness}
-        transparent={opacity < 1}
-        opacity={opacity}
-        depthWrite={opacity >= 1}
-      />
-      {edge && <Edges color={edge} threshold={20} />}
-    </mesh>
-  );
-}
-
-const subscribeFonts = (cb: () => void) => {
-  document.fonts.addEventListener("loadingdone", cb);
-  return () => document.fonts.removeEventListener("loadingdone", cb);
-};
-const fontsLoaded = () => document.fonts.status === "loaded";
-const cssVar = (name: string) => getComputedStyle(document.body).getPropertyValue(name).trim();
-
-/** Alto en pantalla (fracción de la altura del canvas, sin el factor de la cámara) por cada píxel de la etiqueta. */
-const LABEL_SCALE = 0.00034;
-
-interface LabelProps {
-  position: [number, number, number];
-  title: string;
-  subtitle?: string;
-  titleColor?: string;
-  subtitleColor?: string;
-}
-
-function LabelSprite({ position, title, subtitle, titleColor = "#F0F0F0", subtitleColor }: LabelProps) {
-  const { texture, width, height } = useMemo(() => {
-    const bebas = `${cssVar("--font-bebas") || "Bebas Neue"}, sans-serif`;
-    const mono = `${cssVar("--font-dm-mono") || "DM Mono"}, monospace`;
-    const titlePx = 56, subPx = 30, padX = 28, padY = 18, gap = 8;
-    const medidor = document.createElement("canvas").getContext("2d")!;
-    medidor.font = `${titlePx}px ${bebas}`;
-    let ancho = medidor.measureText(title).width;
-    if (subtitle) {
-      medidor.font = `${subPx}px ${mono}`;
-      ancho = Math.max(ancho, medidor.measureText(subtitle).width);
+/** Una luz de pared por sillón, sobre la pared contra la que apoya. */
+const GLOWS: WallGlowSpot[] = IDS.flatMap((id) =>
+  (SOFAS[id] ?? []).flatMap((s): WallGlowSpot[] => {
+    const level = SECTOR_SHAPES[id].level;
+    const cx = (s.points[0][0] + s.points[2][0]) / 2;
+    const cy = (s.points[0][1] + s.points[2][1]) / 2;
+    const y = LEVEL_HEIGHT[level] + 3.2;
+    if (s.back === "w") {
+      const [x, z] = planToWorld([LOCAL_BOUNDS.x0, cy]);
+      return [{ position: [x + 0.08, y, z], rotationY: Math.PI / 2, level }];
     }
-    const w = Math.ceil(ancho + padX * 2);
-    const h = padY * 2 + titlePx + (subtitle ? gap + subPx : 0);
-    const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
-    const g = canvas.getContext("2d")!;
-    g.fillStyle = "rgba(0,0,0,0.78)";
-    g.strokeStyle = "rgba(255,255,255,0.18)";
-    g.lineWidth = 2;
-    g.beginPath();
-    g.roundRect(1, 1, w - 2, h - 2, 10);
-    g.fill();
-    g.stroke();
-    g.textAlign = "center";
-    g.textBaseline = "top";
-    g.font = `${titlePx}px ${bebas}`;
-    g.fillStyle = titleColor;
-    g.fillText(title, w / 2, padY);
-    if (subtitle) {
-      g.font = `${subPx}px ${mono}`;
-      g.fillStyle = subtitleColor ?? titleColor;
-      g.fillText(subtitle, w / 2, padY + titlePx + gap);
+    if (s.back === "e") {
+      const [x, z] = planToWorld([LOCAL_BOUNDS.x1, cy]);
+      return [{ position: [x - 0.08, y, z], rotationY: -Math.PI / 2, level }];
     }
-    const t = new THREE.CanvasTexture(canvas);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return { texture: t, width: w, height: h };
-  }, [title, subtitle, titleColor, subtitleColor]);
-  useEffect(() => () => texture.dispose(), [texture]);
-
-  return (
-    <sprite position={position} scale={[width * LABEL_SCALE, height * LABEL_SCALE, 1]} renderOrder={10} raycast={() => null}>
-      <spriteMaterial map={texture} transparent depthTest={false} sizeAttenuation={false} />
-    </sprite>
-  );
-}
-
-/**
- * Etiqueta dibujada en el propio canvas (sprite): no usa DOM, así que no depende de `Html`
- * y mantiene el mismo tamaño en pantalla aunque la cámara se acerque o se aleje.
- * Espera a que las tipografías estén cargadas para dibujar con la de la marca.
- */
-function Label(props: LabelProps) {
-  const fontsReady = useSyncExternalStore(subscribeFonts, fontsLoaded, () => false);
-  return fontsReady ? <LabelSprite {...props} /> : null;
-}
-
-/** Paredes de ladrillo del local: solo se ven las caras de adentro, así no tapan al girar el mapa. */
-function BrickWalls() {
-  const map = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 256;
-    const g = canvas.getContext("2d")!;
-    g.fillStyle = "#1a0f0b"; // mortero
-    g.fillRect(0, 0, 256, 256);
-    const filas = 16, alto = 256 / filas, ancho = 64;
-    for (let r = 0; r < filas; r++) {
-      const desfase = r % 2 ? ancho / 2 : 0;
-      for (let x = -ancho; x < 256 + ancho; x += ancho) {
-        const tono = 50 + (((r * 7 + Math.floor((x + desfase) / ancho) * 13) % 5 + 5) % 5) * 6;
-        g.fillStyle = `rgb(${tono + 35}, ${tono - 5}, ${tono - 15})`;
-        g.fillRect(x + desfase + 1, r * alto + 1, ancho - 2, alto - 2);
-      }
+    if (s.back === "n") {
+      const [x, z] = planToWorld([cx, LOCAL_BOUNDS.y0]);
+      return [{ position: [x, y, z + 0.08], rotationY: 0, level }];
     }
-    const t = new THREE.CanvasTexture(canvas);
-    t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(10, 2.2);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, []);
-  useEffect(() => () => map.dispose(), [map]);
-
-  return (
-    <mesh position={[0, 9.6, 0]} raycast={() => null}>
-      <boxGeometry args={[78, 20, 94]} />
-      <meshStandardMaterial map={map} side={THREE.BackSide} roughness={1} />
-    </mesh>
-  );
-}
+    return [];
+  })
+);
+/** Zona de cada escalera con un margen: ahí las barandas se interrumpen para poder subir. */
+const STAIR_GAPS = STAIRS.map(({ box }) => ({ x: box.x - 4, y: box.y - 4, w: box.w + 8, h: box.h + 8 }));
+const GROUND: Pt[] = [
+  [LOCAL_BOUNDS.x0, LOCAL_BOUNDS.y0],
+  [LOCAL_BOUNDS.x1, LOCAL_BOUNDS.y0],
+  [LOCAL_BOUNDS.x1, LOCAL_BOUNDS.y1],
+  [LOCAL_BOUNDS.x0, LOCAL_BOUNDS.y1],
+];
 
 function Stairs({ opacity }: { opacity: (level: number) => number }) {
   return (
@@ -215,7 +89,7 @@ function Stairs({ opacity }: { opacity: (level: number) => number }) {
           return (
             <mesh key={`${k}-${i}`} position={[x, from + h / 2, z]} raycast={() => null}>
               <boxGeometry args={alX ? [run * PLAN_SCALE, h, s.box.h * PLAN_SCALE] : [s.box.w * PLAN_SCALE, h, run * PLAN_SCALE]} />
-              <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.35} roughness={0.6} transparent={o < 1} opacity={o} depthWrite={o >= 1} />
+              <SurfaceMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.35} roughness={0.6} opacity={o} />
             </mesh>
           );
         });
@@ -240,78 +114,12 @@ function Columns({ opacity }: { opacity: (level: number) => number }) {
           return (
             <mesh key={`${k}-${i}`} position={[x, top / 2, z]} raycast={() => null}>
               <cylinderGeometry args={[0.18, 0.18, top, 8]} />
-              <meshStandardMaterial color="#1b1c22" metalness={0.6} roughness={0.5} transparent={o < 1} opacity={o} depthWrite={o >= 1} />
+              <SurfaceMaterial color="#1b1c22" metalness={0.6} roughness={0.5} opacity={o} />
             </mesh>
           );
         })
       )}
     </>
-  );
-}
-
-/** Baranda de caño sobre el borde de un entrepiso. */
-function Rail({ points, y, opacity }: { points: Pt[]; y: number; opacity: number }) {
-  const line = useMemo(() => [...points, points[0]].map((p) => { const [x, z] = planToWorld(p); return [x, y, z] as [number, number, number]; }), [points, y]);
-  return <Line points={line} color={STEEL} lineWidth={1} transparent opacity={opacity} raycast={() => null} />;
-}
-
-/** Manchas de luz sobre la pista, como las de la bola de espejos. */
-const SPOTS: Pt[] = [[260, 430], [380, 480], [310, 560], [440, 440], [400, 620], [250, 650], [470, 560]];
-
-function CameraRig({ focus }: { focus: number | null }) {
-  const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
-  const { camera, size, invalidate } = useThree();
-  const reduce = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
-  const aspect = size.width / size.height;
-
-  const goal = useMemo(() => {
-    let target = new THREE.Vector3(0, 5, 0);
-    if (focus !== null) {
-      const [x, z] = planToWorld(levelCenter(focus));
-      target = new THREE.Vector3(x, LEVEL_HEIGHT[focus], z);
-    }
-    // La cámara se aleja lo justo para que entre el piso (o todo el local) en alto y en ancho
-    const pts = (focus === null ? LEVEL_FLOORS.flat() : LEVEL_FLOORS[focus]).map(planToWorld);
-    const xs = pts.map((p) => p[0]);
-    const zs = pts.map((p) => p[1]);
-    const ancho = Math.max(...xs) - Math.min(...xs);
-    const alto = Math.max(...zs) - Math.min(...zs);
-    return { target, distance: Math.max(alto, ancho / aspect) * 1.7 };
-  }, [focus, aspect]);
-
-  useEffect(() => {
-    const el = controls.current?.domElement as HTMLElement | undefined;
-    // El gesto vertical sigue scrolleando la página; solo el horizontal gira el mapa
-    if (el) el.style.touchAction = "pan-y";
-    invalidate();
-  }, [invalidate]);
-
-  useFrame((_, dt) => {
-    const c = controls.current;
-    if (!c) return;
-    const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
-    c.target.lerp(goal.target, k);
-    const offset = camera.position.clone().sub(c.target);
-    const len = offset.length();
-    const next = len + (goal.distance - len) * k;
-    offset.setLength(next);
-    camera.position.copy(c.target).add(offset);
-    c.update();
-    if (Math.abs(next - goal.distance) > 0.05 || c.target.distanceTo(goal.target) > 0.05) invalidate();
-  });
-
-  return (
-    <OrbitControls
-      ref={controls}
-      makeDefault
-      target={[0, 5, 0]}
-      enableZoom={false}
-      enablePan={false}
-      enableDamping
-      dampingFactor={0.1}
-      minPolarAngle={0.45}
-      maxPolarAngle={1.2}
-    />
   );
 }
 
@@ -325,7 +133,27 @@ export interface MapaScene3DProps {
 
 function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene3DProps) {
   const [hoveredId, setHoveredId] = useState<MapSectorId | null>(null);
+  // Relieve: los sectores arrancan abultados y se aplanan suavemente apenas el usuario gira la cámara
+  const [relief, setRelief] = useState(1);
+  const [rotated, setRotated] = useState(false);
+  useEffect(() => {
+    if (!rotated) return;
+    let raf = 0;
+    const tick = () => {
+      setRelief((r) => {
+        const next = r - 0.06;
+        if (next > 0) raf = requestAnimationFrame(tick);
+        return Math.max(next, 0);
+      });
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [rotated]);
+  const bump = (h: number) => h * (1 + RELIEF * relief);
   const opacity = (level: number) => (focus === null || focus === level ? 1 : DIM_OPACITY);
+  const tile = useCanvasTexture(makeTileTexture);
+  const plate = useCanvasTexture(makePlateTexture);
+  const bottles = useCanvasTexture(makeBottlesTexture);
 
   useEffect(() => () => { document.body.style.cursor = ""; }, []);
   const over = (id: MapSectorId | null) => {
@@ -339,55 +167,51 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
 
   return (
     <>
-      <hemisphereLight args={["#aab4ff", "#2a1a10", 1.6]} />
-      <directionalLight position={[30, 60, 40]} intensity={2.4} />
+      <hemisphereLight args={["#aab4ff", "#2a1a10", 1.5]} />
+      <directionalLight position={[30, 60, 40]} intensity={2.2} />
       <directionalLight position={[-40, 30, -30]} intensity={0.5} color="#6688ff" />
+      {/* Luces de color como en el local: azul en la cabina, rojo en backstage, violeta arriba y ámbar en la barra */}
+      <pointLight position={[-2, 12, 27]} color="#2d6bff" intensity={1400} distance={45} decay={2} />
+      <pointLight position={[-1, 15, 37]} color="#ff2a3d" intensity={1100} distance={40} decay={2} />
+      <pointLight position={[28, 17, 2]} color="#9b3dff" intensity={1400} distance={50} decay={2} />
+      <pointLight position={[-15, 8, -36]} color="#ffb347" intensity={1000} distance={35} decay={2} />
 
-      {/* Suelo general bajo todo el local */}
-      <mesh position={[0, -0.25, 0]} raycast={() => null}>
-        <boxGeometry args={[78, 0.3, 94]} />
-        <meshStandardMaterial color="#10101a" metalness={0.4} roughness={0.8} />
-      </mesh>
-
+      {/* Suelo general bajo todo el local y paredes de ladrillo */}
+      <Block points={GROUND} base={-0.4} depth={0.35} color="#8a8a95" map={tile} metalness={0.4} roughness={0.7} />
       <BrickWalls />
+      <WallLogo />
 
       {/* Pista principal (piso 1) */}
       <Block
         points={LEVEL_FLOORS[0]}
         base={-0.05}
         depth={0.1}
-        color="#2b2d3d"
-        metalness={0.5}
-        roughness={0.35}
+        color="#ffffff"
+        map={tile}
+        metalness={0.6}
+        roughness={0.3}
         opacity={opacity(0)}
         edge="#ffffff"
         onClick={() => onFocusLevel(0)}
         onOver={() => over(null)}
         onOut={out}
       />
-      {SPOTS.map((p, i) => {
-        const [x, z] = planToWorld(p);
-        return (
-          <mesh key={i} position={[x, 0.07, z]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
-            <ringGeometry args={[0.9, 1.6, 24]} />
-            <meshBasicMaterial color="#ffffff" transparent opacity={0.16 * opacity(0)} depthWrite={false} />
-          </mesh>
-        );
-      })}
+      <PistaLights opacity={opacity(0)} />
       {focus === 0 && (() => {
         const [x, z] = worldCenter(LEVEL_FLOORS[0]);
         return <Label position={[x, 1.2, z]} title="PISTA PRINCIPAL" />;
       })()}
 
-      {/* Entrepisos */}
+      {/* Entrepisos, con baranda y neón en los bordes abiertos */}
       {[1, 2, 3].map((level) => (
         <group key={level}>
           <Block
             points={LEVEL_FLOORS[level]}
             base={LEVEL_HEIGHT[level] - FLOOR_THICKNESS}
             depth={FLOOR_THICKNESS}
-            color="#23252f"
-            metalness={0.5}
+            color="#ffffff"
+            map={plate}
+            metalness={0.6}
             roughness={0.5}
             opacity={opacity(level)}
             edge={MAP_LEVELS[level].accent}
@@ -395,45 +219,69 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
             onOver={() => over(null)}
             onOut={out}
           />
-          <Rail points={LEVEL_FLOORS[level]} y={LEVEL_HEIGHT[level] + 0.9} opacity={opacity(level) * 0.8} />
+          <Railing points={LEVEL_FLOORS[level]} base={LEVEL_HEIGHT[level]} opacity={opacity(level)} gaps={STAIR_GAPS} />
+          <NeonEdge points={LEVEL_FLOORS[level]} base={LEVEL_HEIGHT[level]} color={MAP_LEVELS[level].accent} opacity={opacity(level)} />
         </group>
       ))}
       <Block
         points={CABINA_PLATFORM.points}
         base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation] - FLOOR_THICKNESS}
         depth={FLOOR_THICKNESS}
-        color="#23252f"
-        metalness={0.5}
+        color="#ffffff"
+        map={plate}
+        metalness={0.6}
         roughness={0.5}
         opacity={opacity(CABINA_PLATFORM.level)}
-        edge={MAP_LEVELS[CABINA_PLATFORM.level].accent}
+        edge={RED_NEON}
       />
+      <NeonEdge points={CABINA_PLATFORM.points} base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation]} color={RED_NEON} opacity={opacity(CABINA_PLATFORM.level)} />
       <Columns opacity={opacity} />
       <Stairs opacity={opacity} />
 
       {/* Barras y cabina */}
       {Object.entries(PROPS).map(([key, prop]) => {
         const [cx, cz] = worldCenter(prop.points);
-        const top = LEVEL_HEIGHT[prop.elevation] + prop.height;
+        const base = LEVEL_HEIGHT[prop.elevation];
+        const o = opacity(prop.level);
         return (
           <group key={key}>
             <Block
               points={prop.points}
-              base={LEVEL_HEIGHT[prop.elevation]}
+              base={base}
               depth={prop.height}
               color={WOOD}
               emissive={AMBER}
               emissiveIntensity={key === "cabina" ? 0.18 : 0.1}
-              opacity={opacity(prop.level)}
+              opacity={o}
               edge={AMBER}
             />
+            {prop.shelf && (
+              <Block
+                points={prop.shelf}
+                base={base}
+                depth={2.6}
+                color="#ffffff"
+                map={bottles}
+                emissive="#ffffff"
+                emissiveMap={bottles}
+                emissiveIntensity={0.85}
+                opacity={o}
+                roughness={0.6}
+              />
+            )}
             {/* La cabina no se reserva pero es la referencia del local: su etiqueta se ve siempre */}
             {(key === "cabina" || focus === prop.level) && (
-              <Label position={[cx, top + 0.8, cz]} title={prop.label.toUpperCase()} titleColor={AMBER} />
+              <Label position={[cx, base + prop.height + 0.8, cz]} title={prop.label.toUpperCase()} titleColor={AMBER} />
             )}
           </group>
         );
       })}
+
+      {/* Divisores entre box y box, y luces de pared detrás de los sillones */}
+      {DIVIDERS.map((d, i) => (
+        <Block key={i} points={d.points} base={LEVEL_HEIGHT[d.level]} depth={1.3} color={TABLE} roughness={0.5} metalness={0.7} opacity={opacity(d.level)} />
+      ))}
+      <WallGlows spots={GLOWS} opacity={opacity} />
 
       {/* Sectores reservables */}
       {IDS.map((id) => {
@@ -442,6 +290,8 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
         const selected = selectedId === id;
         const hovered = hoveredId === id;
         const base = LEVEL_HEIGHT[shape.level];
+        const lift = selected ? 0.25 : 0;
+        const alto = bump(shape.height);
         const [cx, cz] = worldCenter(shape.points);
         const showLabel = selected || hovered || focus === shape.level;
         return (
@@ -449,7 +299,7 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
             <Block
               points={shape.points}
               base={base}
-              depth={shape.height + (selected ? 0.25 : 0)}
+              depth={alto + lift}
               color={cfg.accent}
               emissive={cfg.accent}
               emissiveIntensity={selected ? 0.9 : hovered ? 0.55 : 0.16}
@@ -460,26 +310,41 @@ function Scene({ precios, selectedId, focus, onSelect, onFocusLevel }: MapaScene
               onOver={() => over(id)}
               onOut={out}
             />
-            {SOFAS[id]?.map((puntos, i) => (
-              <Block
-                key={i}
-                points={puntos}
-                base={base + shape.height + (selected ? 0.25 : 0)}
-                depth={0.9}
-                color={SOFA}
-                roughness={0.95}
-                metalness={0}
-                opacity={opacity(shape.level)}
-              />
-            ))}
+            {SOFAS[id]?.map((sofa, i) => {
+              const { seat, backrest } = sofaParts(sofa);
+              const top = base + alto + lift;
+              const mesa = tableFor(sofa);
+              const [mx, mz] = worldCenter(mesa);
+              const anchoMesa = (mesa[2][0] - mesa[0][0]) * PLAN_SCALE;
+              const largoMesa = (mesa[2][1] - mesa[0][1]) * PLAN_SCALE;
+              const o = opacity(shape.level);
+              return (
+                <group key={i}>
+                  <Block points={seat} base={top} depth={0.55} color={SOFA_SEAT} roughness={0.8} metalness={0.1} opacity={o} />
+                  <Block points={backrest} base={top} depth={1.25} color={SOFA_BACK} roughness={0.8} metalness={0.1} opacity={o} />
+                  <Block points={mesa} base={top} depth={0.9} color={TABLE} roughness={0.4} metalness={0.7} opacity={o} />
+                  {/* Cristalería sobre la mesa, a lo largo de su lado más largo */}
+                  {[-0.3, 0, 0.3].map((t, k) => (
+                    <mesh
+                      key={k}
+                      position={[mx + (anchoMesa >= largoMesa ? t * anchoMesa : 0), top + 1.1, mz + (anchoMesa >= largoMesa ? 0 : t * largoMesa)]}
+                      raycast={() => null}
+                    >
+                      <cylinderGeometry args={[0.17, 0.14, 0.4, 10]} />
+                      <SurfaceMaterial color="#e8c47a" emissive="#f5a300" emissiveIntensity={0.35} roughness={0.3} opacity={o} />
+                    </mesh>
+                  ))}
+                </group>
+              );
+            })}
             {showLabel && (
-              <Label position={[cx, base + shape.height + 0.9, cz]} title={cfg.name.toUpperCase()} subtitle={precios[id]} subtitleColor={cfg.accent} />
+              <Label position={[cx, base + alto + 1.6, cz]} title={cfg.name.toUpperCase()} subtitle={precios[id]} subtitleColor={cfg.accent} />
             )}
           </group>
         );
       })}
 
-      <CameraRig focus={focus} />
+      <CameraRig focus={focus} onUserRotate={() => setRotated(true)} />
     </>
   );
 }
