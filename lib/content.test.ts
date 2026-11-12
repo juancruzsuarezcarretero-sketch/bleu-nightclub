@@ -101,7 +101,7 @@ describe("precios del mapa", () => {
 
   it("el precio de una experiencia llega a todos sus sectores y el backstage sale de mapa", () => {
     const paquetes = DEFAULT_CONTENT.paquetes.map((p) => (p.id === "mesa-vip" ? { ...p, precio: 800000 } : p.id === "vip-gold" ? { ...p, precio: 40000 } : p));
-    const sectores = sectoresConPrecios(paquetes, { backstage: 2000000 });
+    const sectores = sectoresConPrecios(paquetes, { ...DEFAULT_CONTENT.mapa, backstage: 2000000 });
     for (const id of ["box-1", "box-2", "box-3", "box-4", "box-5"] as const) expect(sectores[id].fixedPrice).toBe(800000);
     expect(sectores.golden.pricePerPerson).toBe(40000);
     expect(sectores["ultra-box-1"].fixedPrice).toBe(1200000);
@@ -118,6 +118,6 @@ describe("precios del mapa", () => {
 
   it("mapa inválido vuelve al precio de siempre", () => {
     expect(parseContent([{ key: "mapa", value: { backstage: -1 } }]).mapa).toEqual(DEFAULT_CONTENT.mapa);
-    expect(parseContent([{ key: "mapa", value: { backstage: 1800000 } }]).mapa).toEqual({ backstage: 1800000 });
+    expect(parseContent([{ key: "mapa", value: { backstage: 1800000 } }]).mapa).toEqual({ backstage: 1800000, creditoConsumo: DEFAULT_CONTENT.mapa.creditoConsumo });
   });
 });

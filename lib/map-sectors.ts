@@ -79,16 +79,13 @@ export function formatARS(amount: number): string {
   return `$${amount.toLocaleString("es-AR")}`;
 }
 
-/** Parte del precio que se devuelve en consumo, según la hora a la que se consume (así lo publica el club). */
-export const CONSUMO_CREDITO = [
-  { hasta: "01:30", porcentaje: 90 },
-  { hasta: "02:00", porcentaje: 70 },
-  { hasta: null, porcentaje: 50 },
-] as const;
-
-export function consumoCreditoLabel(tramo: (typeof CONSUMO_CREDITO)[number], anterior: string | null): string {
-  if (tramo.hasta === null) return `Después de las ${anterior}`;
-  return anterior === null ? `Antes de las ${tramo.hasta}` : `${anterior} a ${tramo.hasta}`;
+/** Los tres tramos del crédito de consumo, listos para mostrar, a partir de lo que se publica desde Madre. */
+export function tramosCredito(c: Mapa["creditoConsumo"]): { texto: string; porcentaje: number }[] {
+  return [
+    { texto: `Antes de las ${c.hasta1}`, porcentaje: c.pct1 },
+    { texto: `${c.hasta1} a ${c.hasta2}`, porcentaje: c.pct2 },
+    { texto: `Después de las ${c.hasta2}`, porcentaje: c.pct3 },
+  ];
 }
 
 const TABLE_INCLUDES = [

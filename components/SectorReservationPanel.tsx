@@ -5,17 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Minus, Plus } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
 import {
-  CONSUMO_CREDITO,
   MAP_THEME_STYLES,
-  consumoCreditoLabel,
   formatARS,
   getSectorTypeLabel,
   calculateSectorTotal,
+  tramosCredito,
   type MapSectorSelection,
 } from "@/lib/map-sectors";
 import { reservationFromMapSelection } from "@/lib/reservation-selection";
 import { useReservation } from "@/context/ReservationContext";
-import { useSectores } from "@/context/ContentContext";
+import { useContent, useSectores } from "@/context/ContentContext";
 
 interface SectorReservationPanelProps {
   selection: MapSectorSelection | null;
@@ -31,6 +30,7 @@ function PanelContent({
   onClose: () => void;
 }) {
   const sectores = useSectores();
+  const { mapa } = useContent();
   const config = sectores[selection.sectorId];
   const theme = MAP_THEME_STYLES[config.theme];
   const perPerson = Boolean(config.pricePerPerson);
@@ -149,9 +149,9 @@ function PanelContent({
             Crédito de consumo
           </p>
           <ul className="space-y-1.5">
-            {CONSUMO_CREDITO.map((tramo, i) => (
-              <li key={tramo.porcentaje} className="flex items-center justify-between font-mono text-sm text-[#F0F0F0]/80">
-                <span>{consumoCreditoLabel(tramo, i === 0 ? null : CONSUMO_CREDITO[i - 1].hasta)}</span>
+            {tramosCredito(mapa.creditoConsumo).map((tramo) => (
+              <li key={tramo.texto} className="flex items-center justify-between font-mono text-sm text-[#F0F0F0]/80">
+                <span>{tramo.texto}</span>
                 <span style={{ color: theme.accent }}>{tramo.porcentaje}% consumible</span>
               </li>
             ))}

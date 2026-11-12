@@ -87,8 +87,20 @@ export const textosSchema = z.object({
   nocheSabado: texto(200),
 });
 
+const hora = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora con formato HH:MM");
+const porcentaje = z.number().int().min(0).max(100);
+
+/** Parte del precio de un sector que se devuelve en consumo: hasta `hasta1`, hasta `hasta2` y después. Las horas son de la madrugada (después de las 00:00). */
+export const creditoConsumoSchema = z
+  .object({ hasta1: hora, hasta2: hora, pct1: porcentaje, pct2: porcentaje, pct3: porcentaje })
+  .refine((c) => c.hasta1 < c.hasta2, { message: "La primera hora tiene que ser anterior a la segunda", path: ["hasta2"] });
+
+export const CREDITO_CONSUMO_INICIAL = { hasta1: "01:30", hasta2: "02:00", pct1: 90, pct2: 70, pct3: 50 };
+
 export const mapaSchema = z.object({
   backstage: z.number().int().min(1).max(100_000_000),
+  // Opcional para no romper lo ya publicado: sin el dato queda el crédito de fábrica
+  creditoConsumo: creditoConsumoSchema.default(CREDITO_CONSUMO_INICIAL),
 });
 
 export type Contacto = z.infer<typeof contactoSchema>;
@@ -155,7 +167,7 @@ export const DEFAULT_CONTENT: Content = {
     nocheViernes: "La noche azul de Córdoba. Música electrónica, ambiente premium y la mejor producción del centro.",
     nocheSabado: "El sábado tiene otro nombre. Reggaeton, Latin y la energía más alta de la semana.",
   },
-  mapa: { backstage: 1500000 },
+  mapa: { backstage: 1500000, creditoConsumo: CREDITO_CONSUMO_INICIAL },
 };
 
 /** Usuario de Instagram a partir del link (`https://instagram.com/bleu.club` → `@bleu.club`). */
