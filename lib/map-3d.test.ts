@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAP_SECTORS, type MapSectorId } from "./map-sectors";
 import { levelOfSector, MAP_LEVELS } from "./map-levels";
-import { BARANDA_CABINA, PUERTA_CABINA, CABINA_PLATFORM, DIVIDERS, LEVEL_FLOORS, LEVEL_HEIGHT, LOCAL_BOUNDS, PROPS, SECTOR_SHAPES, SOFAS, EYE_HEIGHT, PLAN_SCALE, STAIRS, levelCenter, openEdges, planToWorld, sofaParts, tableFor, viewpoint, viewpointAt, type Pt, type Sofa } from "./map-3d";
+import { BARANDA_CABINA, CABINAS, PUERTA_CABINA, CABINA_PLATFORM, DIVIDERS, LEVEL_FLOORS, LEVEL_HEIGHT, LOCAL_BOUNDS, PROPS, SECTOR_SHAPES, SOFAS, EYE_HEIGHT, PLAN_SCALE, STAIRS, levelCenter, openEdges, planToWorld, sofaParts, tableFor, viewpoint, viewpointAt, type Pt, type Sofa } from "./map-3d";
 
 const ids = Object.keys(MAP_SECTORS) as MapSectorId[];
 
@@ -238,6 +238,28 @@ describe("geometría 3D del mapa", () => {
     expect(viewpoint("golden", punto).eye.slice(0, 1).concat(viewpoint("golden", punto).eye[2])).toEqual(punto);
     expect(viewpoint("golden", planToWorld([500, 100])).eye[0]).not.toBe(viewpoint("golden", punto).eye[0]);
     expect(viewpoint("box-1", punto).eye).toEqual(viewpoint("box-1").eye);
+  });
+
+  it("la cabina es doble: dos mesas lado a lado sobre la plataforma, con las puntas del medio redondeadas y las de afuera rectas", () => {
+    expect(CABINAS).toHaveLength(2);
+    const [izq, der] = CABINAS;
+    const maxX = (pts: Pt[]) => Math.max(...pts.map((p) => p[0]));
+    const minX = (pts: Pt[]) => Math.min(...pts.map((p) => p[0]));
+    const minY = (pts: Pt[]) => Math.min(...pts.map((p) => p[1]));
+    const maxY = (pts: Pt[]) => Math.max(...pts.map((p) => p[1]));
+    expect(maxX(izq)).toBeLessThan(minX(der)); // hay un hueco entre las dos
+    for (const mesa of CABINAS) {
+      expect(inside(centroide(mesa), CABINA_PLATFORM.points)).toBe(true);
+      for (const p of mesa) expect(inside(p, CABINA_PLATFORM.points) || p[0] === minX(CABINA_PLATFORM.points)).toBe(true);
+    }
+    const tiene = (pts: Pt[], p: Pt) => pts.some((q) => q[0] === p[0] && q[1] === p[1]);
+    // puntas de afuera: esquinas rectas
+    expect(tiene(izq, [minX(izq), minY(izq)])).toBe(true);
+    expect(tiene(der, [maxX(der), maxY(der)])).toBe(true);
+    // puntas del medio: sin esquina recta y con más puntos que un rectángulo
+    expect(tiene(izq, [maxX(izq), minY(izq)])).toBe(false);
+    expect(tiene(der, [minX(der), maxY(der)])).toBe(false);
+    expect(izq.length).toBeGreaterThan(8);
   });
 
   it("la puerta de la baranda de la cabina está al medio y la baranda cubre el resto de su lado oeste", () => {

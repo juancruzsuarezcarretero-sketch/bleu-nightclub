@@ -147,6 +147,33 @@ export const PROPS: Record<PropId, PropShape> = {
   barraPrincipal: { label: "Barra Principal", level: 0, elevation: 0, points: rect(70, 380, 45, 270), height: 1.1, shelf: rect(70, 380, 8, 270) },
 };
 
+/** Rectángulo con las esquinas indicadas redondeadas (radio `r`, en unidades del plano), como polígono recorrido en el sentido de las agujas del reloj. */
+export function roundedRect(x: number, y: number, w: number, h: number, r: number, round: { nw?: boolean; ne?: boolean; se?: boolean; sw?: boolean }): Pt[] {
+  const PASOS = 6;
+  const esquina = (redonda: boolean | undefined, cx: number, cy: number, a0: number, punto: Pt): Pt[] => {
+    if (!redonda) return [punto];
+    return Array.from({ length: PASOS + 1 }, (_, i) => {
+      const a = a0 + ((Math.PI / 2) * i) / PASOS;
+      return [Math.round((cx + r * Math.cos(a)) * 100) / 100, Math.round((cy + r * Math.sin(a)) * 100) / 100] as Pt;
+    });
+  };
+  return [
+    ...esquina(round.nw, x + r, y + r, Math.PI, [x, y]),
+    ...esquina(round.ne, x + w - r, y + r, (3 * Math.PI) / 2, [x + w, y]),
+    ...esquina(round.se, x + w - r, y + h - r, 0, [x + w, y + h]),
+    ...esquina(round.sw, x + r, y + h - r, Math.PI / 2, [x, y + h]),
+  ];
+}
+
+/**
+ * Doble cabina de DJ, como en el local: dos mesas rectangulares una al lado de la otra sobre la plataforma,
+ * con las puntas que dan al medio redondeadas.
+ */
+export const CABINAS: Pt[][] = [
+  roundedRect(258, 718, 105, 70, 24, { ne: true, se: true }),
+  roundedRect(392, 718, 105, 70, 24, { nw: true, sw: true }),
+];
+
 /** La cabina se ve en el plano del piso 4, pero está a la altura del piso 3: lleva su propia plataforma. */
 export const CABINA_PLATFORM = { level: 3, elevation: 2, points: PROPS.cabina.points };
 

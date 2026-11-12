@@ -6,6 +6,7 @@ import { MAP_SECTORS, type MapSectorId } from "@/lib/map-sectors";
 import { MAP_LEVELS } from "@/lib/map-levels";
 import {
   BARANDA_CABINA,
+  CABINAS,
   CABINA_PLATFORM,
   DIVIDERS,
   LEVEL_FLOORS,
@@ -258,16 +259,23 @@ function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: Map
         const o = opacity(prop.level);
         return (
           <group key={key}>
-            <Block
-              points={prop.points}
-              base={base}
-              depth={prop.height}
-              color={WOOD}
-              emissive={key === "cabina" ? CABINA_COLOR : AMBER}
-              emissiveIntensity={key === "cabina" ? 0.35 : 0.1}
-              opacity={o}
-              edge={key === "cabina" ? CABINA_COLOR : AMBER}
-            />
+            {key === "cabina" ? (
+              // Doble cabina: dos mesas con las puntas del medio redondeadas, sobre la plataforma
+              CABINAS.map((pts, i) => (
+                <Block key={i} points={pts} base={base} depth={prop.height} color={WOOD} emissive={CABINA_COLOR} emissiveIntensity={0.35} opacity={o} edge={CABINA_COLOR} />
+              ))
+            ) : (
+              <Block
+                points={prop.points}
+                base={base}
+                depth={prop.height}
+                color={WOOD}
+                emissive={AMBER}
+                emissiveIntensity={0.1}
+                opacity={o}
+                edge={AMBER}
+              />
+            )}
             {prop.shelf && (
               <Block
                 points={prop.shelf}
