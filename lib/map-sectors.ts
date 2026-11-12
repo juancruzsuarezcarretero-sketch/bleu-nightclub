@@ -79,6 +79,18 @@ export function formatARS(amount: number): string {
   return `$${amount.toLocaleString("es-AR")}`;
 }
 
+/** Parte del precio que se devuelve en consumo, según la hora a la que se consume (así lo publica el club). */
+export const CONSUMO_CREDITO = [
+  { hasta: "01:30", porcentaje: 90 },
+  { hasta: "02:00", porcentaje: 70 },
+  { hasta: null, porcentaje: 50 },
+] as const;
+
+export function consumoCreditoLabel(tramo: (typeof CONSUMO_CREDITO)[number], anterior: string | null): string {
+  if (tramo.hasta === null) return `Después de las ${anterior}`;
+  return anterior === null ? `Antes de las ${tramo.hasta}` : `${anterior} a ${tramo.hasta}`;
+}
+
 const TABLE_INCLUDES = [
   "Lugar reservado",
   "Cristalería individual",

@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Minus, Plus } from "lucide-react";
 import { useMounted } from "@/lib/useMounted";
 import {
+  CONSUMO_CREDITO,
   MAP_THEME_STYLES,
+  consumoCreditoLabel,
   formatARS,
   getSectorTypeLabel,
   calculateSectorTotal,
@@ -137,6 +139,20 @@ function PanelContent({
                   style={{ color: theme.accent }}
                 />
                 {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-lg border border-white/10 bg-[#050508]/50 p-4">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-wider text-[#F0F0F0]/40">
+            Crédito de consumo
+          </p>
+          <ul className="space-y-1.5">
+            {CONSUMO_CREDITO.map((tramo, i) => (
+              <li key={tramo.porcentaje} className="flex items-center justify-between font-mono text-sm text-[#F0F0F0]/80">
+                <span>{consumoCreditoLabel(tramo, i === 0 ? null : CONSUMO_CREDITO[i - 1].hasta)}</span>
+                <span style={{ color: theme.accent }}>{tramo.porcentaje}% consumible</span>
               </li>
             ))}
           </ul>
