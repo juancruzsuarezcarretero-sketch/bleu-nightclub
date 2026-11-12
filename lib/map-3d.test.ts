@@ -260,6 +260,13 @@ describe("geometría 3D del mapa", () => {
     expect(tiene(izq, [maxX(izq), minY(izq)])).toBe(false);
     expect(tiene(der, [minX(der), maxY(der)])).toBe(false);
     expect(izq.length).toBeGreaterThan(8);
+    // van en el borde que mira a la pista (norte) y no ocupan toda la profundidad de la plataforma
+    const norte = Math.min(...CABINA_PLATFORM.points.map((p) => p[1]));
+    const profundidad = Math.max(...CABINA_PLATFORM.points.map((p) => p[1])) - norte;
+    for (const mesa of CABINAS) {
+      expect(minY(mesa) - norte).toBeLessThanOrEqual(5);
+      expect(maxY(mesa) - minY(mesa)).toBeLessThan(profundidad / 2 + 1);
+    }
   });
 
   it("la puerta de la baranda de la cabina está al medio y la baranda cubre el resto de su lado oeste", () => {

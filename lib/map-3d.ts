@@ -166,12 +166,13 @@ export function roundedRect(x: number, y: number, w: number, h: number, r: numbe
 }
 
 /**
- * Doble cabina de DJ, como en el local: dos mesas rectangulares una al lado de la otra sobre la plataforma,
- * con las puntas que dan al medio redondeadas.
+ * Doble cabina de DJ, como en el local: dos mesas rectangulares una al lado de la otra, con las puntas que dan al
+ * medio redondeadas. Van en el borde de la plataforma que mira a la pista general (el norte) y no ocupan toda su
+ * profundidad: atrás queda lugar para los DJ.
  */
 export const CABINAS: Pt[][] = [
-  roundedRect(258, 718, 105, 70, 24, { ne: true, se: true }),
-  roundedRect(392, 718, 105, 70, 24, { nw: true, sw: true }),
+  roundedRect(258, 708, 105, 48, 20, { ne: true, se: true }),
+  roundedRect(392, 708, 105, 48, 20, { nw: true, sw: true }),
 ];
 
 /** La cabina se ve en el plano del piso 4, pero está a la altura del piso 3: lleva su propia plataforma. */
