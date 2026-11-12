@@ -201,7 +201,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-1": {
     id: "ultra-box-1",
-    name: "Box 2",
+    name: "Box 4",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,
@@ -231,7 +231,7 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-box-3": {
     id: "ultra-box-3",
-    name: "Box 4",
+    name: "Box 2",
     type: "mesa",
     fixedPrice: 1200000,
     maxCapacity: 10,
