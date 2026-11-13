@@ -82,10 +82,11 @@ describe("geometría 3D del mapa", () => {
     }
   });
 
-  it("el rojo (backstage) se expandió hacia el azul y apoya en el suelo del piso 4", () => {
+  it("el rojo (backstage) mide la mitad del ancho que tenía (337), sigue pegado a la escalera y apoya en el suelo del piso 4", () => {
     const xs = SECTOR_SHAPES.backstage.points.map((p) => p[0]);
-    expect(Math.min(...xs)).toBeLessThan(245);
-    expect(inside([230, 850], LEVEL_FLOORS[3])).toBe(true);
+    expect(Math.max(...xs) - Math.min(...xs)).toBe(168);
+    expect(Math.max(...xs)).toBe(557);
+    for (const p of SECTOR_SHAPES.backstage.points) expect(inside([p[0] === 557 ? 556 : p[0] + 1, p[1] === 905 ? 904 : p[1] + 1], LEVEL_FLOORS[3])).toBe(true);
   });
 
   it("la cabina lleva etiqueta y el resto de elementos también", () => {

@@ -44,8 +44,8 @@ export const SECTOR_SHAPES: Record<MapSectorId, SectorShape> = {
   "ultra-box-2": { level: 3, height: BOX_H, points: rect(637, 450, 93, 92) },
   "ultra-box-3": { level: 3, height: BOX_H, points: rect(637, 550, 93, 92) },
   "ultra-standing": { level: 3, height: STANDING_H, points: [[637, 646], [730, 646], [730, 905], [557, 905], [557, 803], [637, 803]] },
-  // Se expande hacia el lado del azul (el plano original llegaba hasta x=245)
-  backstage: { level: 3, height: BOX_H, points: rect(220, 803, 337, 102) },
+  // Mitad del ancho que tenía (337): queda del lado de la escalera, que es donde termina en x=557
+  backstage: { level: 3, height: BOX_H, points: rect(389, 803, 168, 102) },
 };
 
 export interface Sofa {
@@ -117,7 +117,8 @@ export const LEVEL_FLOORS: Pt[][] = [
   // El piso azul termina donde terminan los sectores (boxes hasta x=198, standing hasta x=245)
   [[70, 350], [198, 350], [198, 680], [220, 680], [245, 705], [245, 905], [70, 905]],
   // Sin el hueco de la cabina (más abajo, a la altura del piso 3) ni el de su escalera: el piso 4 empieza donde la escalera termina (x=557)
-  [[637, 350], [730, 350], [730, 905], [220, 905], [220, 800], [557, 800], [557, 705], [637, 705]],
+  // El pedazo de abajo (el del backstage) mide la mitad: llega hasta x=389
+  [[637, 350], [730, 350], [730, 905], [389, 905], [389, 800], [557, 800], [557, 705], [637, 705]],
 ];
 
 export type PropId = "barraCanada" | "barraBaja" | "barraUltra" | "cabina" | "barraPrincipal";
