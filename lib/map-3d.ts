@@ -212,20 +212,37 @@ export const STAIRS: StairRun[] = [
  * Bordes de un piso que dan al vacío. Los que corren pegados a una pared del local no llevan baranda ni neón.
  */
 export function openEdges(points: Pt[]): [Pt, Pt][] {
+  return partirBordes(points).abiertos;
+}
+
+export interface WallSegment {
+  /** Extremos del tramo, ya pegados a la pared (sobre `LOCAL_BOUNDS`). */
+  a: Pt;
+  b: Pt;
+  /** Dirección hacia adentro del local, en el plano. */
+  inward: Pt;
+}
+
+/** Bordes de un piso que corren pegados a una pared del local, llevados a la pared misma. */
+export function wallEdges(points: Pt[]): WallSegment[] {
+  return partirBordes(points).paredes;
+}
+
+function partirBordes(points: Pt[]) {
   const { x0, x1, y0, y1 } = LOCAL_BOUNDS;
   const cerca = (v: number, borde: number) => Math.abs(v - borde) <= 15;
-  const bordes: [Pt, Pt][] = [];
+  const abiertos: [Pt, Pt][] = [];
+  const paredes: WallSegment[] = [];
   for (let i = 0; i < points.length; i++) {
     const a = points[i];
     const b = points[(i + 1) % points.length];
-    const sobrePared =
-      (cerca(a[0], x0) && cerca(b[0], x0)) ||
-      (cerca(a[0], x1) && cerca(b[0], x1)) ||
-      (cerca(a[1], y0) && cerca(b[1], y0)) ||
-      (cerca(a[1], y1) && cerca(b[1], y1));
-    if (!sobrePared) bordes.push([a, b]);
+    if (cerca(a[0], x0) && cerca(b[0], x0)) paredes.push({ a: [x0, a[1]], b: [x0, b[1]], inward: [1, 0] });
+    else if (cerca(a[0], x1) && cerca(b[0], x1)) paredes.push({ a: [x1, a[1]], b: [x1, b[1]], inward: [-1, 0] });
+    else if (cerca(a[1], y0) && cerca(b[1], y0)) paredes.push({ a: [a[0], y0], b: [b[0], y0], inward: [0, 1] });
+    else if (cerca(a[1], y1) && cerca(b[1], y1)) paredes.push({ a: [a[0], y1], b: [b[0], y1], inward: [0, -1] });
+    else abiertos.push([a, b]);
   }
-  return bordes;
+  return { abiertos, paredes };
 }
 
 /** Centro (en el plano) de cada piso, para apuntar la cámara. */

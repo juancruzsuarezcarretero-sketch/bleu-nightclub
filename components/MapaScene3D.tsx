@@ -27,15 +27,17 @@ import {
 import { Block, SurfaceMaterial, worldCenter } from "@/components/mapa3d/Block";
 import { Label } from "@/components/mapa3d/Label";
 import { CameraRig } from "@/components/mapa3d/CameraRig";
-import { BrickWalls, NeonEdge, PistaLights, Railing, WallGlows, WallLogo, type WallGlowSpot } from "@/components/mapa3d/Decor";
-import { makeBottlesTexture, makePlateTexture, makeTileTexture, useCanvasTexture } from "@/components/mapa3d/textures";
+import { BrickWalls, NeonEdge, PistaLights, Railing, StairRails, WallDecals, WallGlows, WallLogo, WallTrim, type WallFloor, type WallGlowSpot } from "@/components/mapa3d/Decor";
+import { makeBottlesTexture, makePlateTexture, makeConcreteTexture, useCanvasTexture } from "@/components/mapa3d/textures";
 
 const FLOOR_THICKNESS = 0.3;
 const DIM_OPACITY = 0.14;
 const STEPS = 8;
 /** Cuánto más altos se ven los sectores antes de girar el mapa (1 = el doble). */
 const RELIEF = 1.4;
-const WOOD = "#3a2412";
+const WOOD = "#7a4a22"; // tapa de madera barnizada de las barras
+const BAR_BODY = "#0f1013";
+const BAR_TOP = 0.1;
 const AMBER = "#f5a300";
 // La cabina es del cuarto piso: lleva su color (violeta)
 const CABINA_COLOR = MAP_LEVELS[3].accent;
@@ -77,7 +79,14 @@ const GROUND: Pt[] = [
   [LOCAL_BOUNDS.x0, LOCAL_BOUNDS.y1],
 ];
 
+/** Pisos con paredes: el 0 es todo el perímetro del local; los otros, sus bordes pegados a la pared. */
+const WALL_FLOORS: WallFloor[] = [
+  { points: GROUND, base: 0, level: 0 },
+  ...[1, 2, 3].map((level) => ({ points: LEVEL_FLOORS[level], base: LEVEL_HEIGHT[level], level })),
+];
+
 function Stairs({ opacity }: { opacity: (level: number) => number }) {
+  const plate = useCanvasTexture(makePlateTexture);
   return (
     <>
       {STAIRS.map((s, k) => {
@@ -91,11 +100,20 @@ function Stairs({ opacity }: { opacity: (level: number) => number }) {
           // Distancia del escalón al borde bajo, medida sobre el eje de la escalera
           const t = (s.dir === 1 ? i + 0.5 : STEPS - i - 0.5) * run;
           const [x, z] = planToWorld(alX ? [s.box.x + t, s.box.y + s.box.h / 2] : [s.box.x + s.box.w / 2, s.box.y + t]);
+          // Franja amarilla en el canto de cada escalón, del lado por donde se sube
+          const canto = (s.dir === 1 ? -1 : 1) * (run / 2 - 0.9);
+          const [nx, nz] = planToWorld(alX ? [s.box.x + t + canto, s.box.y + s.box.h / 2] : [s.box.x + s.box.w / 2, s.box.y + t + canto]);
           return (
-            <mesh key={`${k}-${i}`} position={[x, from + h / 2, z]} raycast={() => null}>
-              <boxGeometry args={alX ? [run * PLAN_SCALE, h, s.box.h * PLAN_SCALE] : [s.box.w * PLAN_SCALE, h, run * PLAN_SCALE]} />
-              <SurfaceMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.35} roughness={0.6} opacity={o} />
-            </mesh>
+            <group key={`${k}-${i}`}>
+              <mesh position={[x, from + h / 2, z]} raycast={() => null}>
+                <boxGeometry args={alX ? [run * PLAN_SCALE, h, s.box.h * PLAN_SCALE] : [s.box.w * PLAN_SCALE, h, run * PLAN_SCALE]} />
+                <SurfaceMaterial color="#ffffff" map={plate} metalness={0.6} roughness={0.5} opacity={o} />
+              </mesh>
+              <mesh position={[nx, from + h + 0.015, nz]} raycast={() => null}>
+                <boxGeometry args={alX ? [0.18, 0.03, s.box.h * PLAN_SCALE] : [s.box.w * PLAN_SCALE, 0.03, 0.18]} />
+                <SurfaceMaterial color="#f2c200" emissive="#f2c200" emissiveIntensity={0.25} roughness={0.6} opacity={o} />
+              </mesh>
+            </group>
           );
         });
       })}
@@ -164,7 +182,7 @@ function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: Map
   // Parado en un sector se ve todo el local sin atenuar ningún piso
   const dim = viewFrom ? null : focus;
   const opacity = (level: number) => (dim === null || dim === level ? 1 : DIM_OPACITY);
-  const tile = useCanvasTexture(makeTileTexture);
+  const concrete = useCanvasTexture(makeConcreteTexture);
   const plate = useCanvasTexture(makePlateTexture);
   const bottles = useCanvasTexture(makeBottlesTexture);
 
@@ -190,7 +208,7 @@ function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: Map
       <pointLight position={[-15, 8, -36]} color="#ffb347" intensity={1000} distance={35} decay={2} />
 
       {/* Suelo general bajo todo el local y paredes de ladrillo */}
-      <Block points={GROUND} base={-0.4} depth={0.35} color="#8a8a95" map={tile} metalness={0.4} roughness={0.7} />
+      <Block points={GROUND} base={-0.4} depth={0.35} color="#8a8a95" map={concrete} metalness={0.4} roughness={0.7} />
       <BrickWalls />
       <WallLogo />
 
@@ -200,7 +218,7 @@ function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: Map
         base={-0.05}
         depth={0.1}
         color="#ffffff"
-        map={tile}
+        map={concrete}
         metalness={0.6}
         roughness={0.3}
         opacity={opacity(0)}
@@ -251,6 +269,9 @@ function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: Map
       <Railing segments={BARANDA_CABINA} base={LEVEL_HEIGHT[CABINA_PLATFORM.elevation]} opacity={opacity(CABINA_PLATFORM.level)} />
       <Columns opacity={opacity} />
       <Stairs opacity={opacity} />
+      <StairRails opacity={opacity} />
+      <WallTrim floors={WALL_FLOORS} opacity={opacity} />
+      <WallDecals floors={WALL_FLOORS} opacity={opacity} />
 
       {/* Barras y cabina */}
       {Object.entries(PROPS).map(([key, prop]) => {
@@ -265,16 +286,10 @@ function Scene({ precios, selectedId, focus, vista, onSelect, onViewFloor }: Map
                 <Block key={i} points={pts} base={base} depth={prop.height} color={WOOD} emissive={CABINA_COLOR} emissiveIntensity={0.35} opacity={o} edge={CABINA_COLOR} />
               ))
             ) : (
-              <Block
-                points={prop.points}
-                base={base}
-                depth={prop.height}
-                color={WOOD}
-                emissive={AMBER}
-                emissiveIntensity={0.1}
-                opacity={o}
-                edge={AMBER}
-              />
+              <>
+                <Block points={prop.points} base={base} depth={prop.height - BAR_TOP} color={BAR_BODY} metalness={0.5} roughness={0.5} opacity={o} edge={AMBER} />
+                <Block points={prop.points} base={base + prop.height - BAR_TOP} depth={BAR_TOP} color={WOOD} emissive={AMBER} emissiveIntensity={0.12} roughness={0.35} opacity={o} />
+              </>
             )}
             {prop.shelf && (
               <Block

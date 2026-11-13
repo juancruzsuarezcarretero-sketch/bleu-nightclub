@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MAP_SECTORS, type MapSectorId } from "./map-sectors";
 import { levelOfSector, MAP_LEVELS } from "./map-levels";
 import { BARANDA_CABINA, CABINAS, PUERTA_CABINA, CABINA_PLATFORM, DIVIDERS, LEVEL_FLOORS, LEVEL_HEIGHT, LOCAL_BOUNDS, PROPS, SECTOR_SHAPES, SOFAS, EYE_HEIGHT, PLAN_SCALE, STAIRS, levelCenter, openEdges, planToWorld, sofaParts, tableFor, viewpoint, viewpointAt, type Pt, type Sofa } from "./map-3d";
+import { wallEdges } from "./map-3d";
 
 const ids = Object.keys(MAP_SECTORS) as MapSectorId[];
 
@@ -151,6 +152,24 @@ describe("geometría 3D del mapa", () => {
       expect(a[0] === 70 && b[0] === 70, "pared izquierda").toBe(false);
       expect(a[1] === 905 && b[1] === 905, "pared de abajo").toBe(false);
     }
+  });
+
+  it("los bordes de cada piso se reparten entre abiertos y pegados a la pared, sin perder ninguno", () => {
+    for (const piso of LEVEL_FLOORS) {
+      expect(openEdges(piso).length + wallEdges(piso).length).toBe(piso.length);
+    }
+  });
+
+  it("los tramos de pared quedan sobre la pared y miran hacia adentro del local", () => {
+    const { x0, x1, y0, y1 } = LOCAL_BOUNDS;
+    const tramos = wallEdges(LEVEL_FLOORS[2]);
+    expect(tramos).toHaveLength(2); // pared izquierda y pared de abajo
+    for (const { a, b, inward } of tramos) {
+      if (inward[0] === 1) expect([a[0], b[0]]).toEqual([x0, x0]);
+      else expect([a[1], b[1]]).toEqual([y1, y1]);
+      expect(inward).toSatisfy((v: Pt) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some((d) => d[0] === v[0] && d[1] === v[1]));
+    }
+    expect(wallEdges([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]).map((t) => t.inward)).toEqual([[0, 1], [-1, 0], [0, -1], [1, 0]]);
   });
 
   it("ningún piso se sale de las paredes del local", () => {
