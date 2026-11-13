@@ -97,7 +97,7 @@ const TABLE_INCLUDES = [
 export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   golden: {
     id: "golden",
-    name: "Golden — Palco 1",
+    name: "Golden VIP",
     type: "mesa",
     typeLabel: "Mesa con sillones",
     pricePerPerson: 35000,
@@ -187,11 +187,11 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "vip-n3-standing": {
     id: "vip-n3-standing",
-    name: "VIP Nivel 3",
+    name: "VIP Standing",
     type: "standing",
     pricePerPerson: 50000,
     capacityLabel: "Sin límite de personas",
-    includes: ["Acceso VIP Nivel 3", "Zona standing premium"],
+    includes: ["Acceso VIP Standing", "Zona standing premium"],
     theme: "blue",
     accent: "#0066FF",
     fill: "#050b16",
@@ -246,11 +246,11 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   "ultra-standing": {
     id: "ultra-standing",
-    name: "Ultra Standing",
+    name: "VIP Standing",
     type: "standing",
     pricePerPerson: 100000,
     capacityLabel: "Sin límite de personas",
-    includes: ["Acceso Ultra VIP", "Zona standing exclusiva"],
+    includes: ["Acceso VIP Standing", "Zona standing exclusiva"],
     theme: "purple-dark",
     accent: "#9933CC",
     fill: "#0a0618",
@@ -260,12 +260,12 @@ export const MAP_SECTORS: Record<MapSectorId, MapSectorConfig> = {
   },
   backstage: {
     id: "backstage",
-    name: "Backstage VIP",
+    name: "Palco",
     type: "area",
     fixedPrice: 1500000,
     capacityLabel: "Área exclusiva",
     includes: [
-      "Acceso Backstage VIP",
+      "Acceso al Palco",
       "Área privada exclusiva",
       "Servicio de máximo nivel",
     ],

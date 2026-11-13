@@ -23,7 +23,7 @@ export const MAP_LEVELS: MapLevel[] = [
   {
     index: 1,
     label: "Segundo piso",
-    name: "Entrepiso · Golden",
+    name: "Entrepiso · Golden VIP",
     accent: "#C89020",
     sectors: ["golden"],
     view: "Desde el entrepiso se ve toda la pista desde arriba, con sillones sobre la baranda.",
@@ -31,7 +31,7 @@ export const MAP_LEVELS: MapLevel[] = [
   {
     index: 2,
     label: "Tercer piso",
-    name: "Box Azules · VIP Nivel 3",
+    name: "Box Azules · VIP Standing",
     accent: "#0066FF",
     sectors: ["box-1", "box-2", "box-3", "box-4", "box-5", "vip-n3-standing"],
     view: "Boxes elevados con vista directa a la pista y al escenario.",
@@ -39,10 +39,10 @@ export const MAP_LEVELS: MapLevel[] = [
   {
     index: 3,
     label: "Cuarto piso",
-    name: "Box Violetas · Backstage",
+    name: "Box Violetas · Palco",
     accent: "#9933CC",
     sectors: ["ultra-box-1", "ultra-box-2", "ultra-box-3", "ultra-standing", "backstage"],
-    view: "El nivel más alto: palcos sobre la pista y el backstage VIP.",
+    view: "El nivel más alto: boxes sobre la pista y el palco.",
   },
 ];
 
