@@ -1,6 +1,6 @@
 import { LEGAL } from "@/lib/legal";
 import { getContent } from "@/lib/content-server";
-import { usuarioInstagram } from "@/lib/content";
+import { enlacesInstagram, usuarioInstagram } from "@/lib/content";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export default async function ResponsableInfo() {
@@ -27,9 +27,14 @@ export default async function ResponsableInfo() {
       )}
       <li>
         Instagram:{" "}
-        <a href={contacto.instagram} target="_blank" rel="noopener noreferrer">
-          {usuarioInstagram(contacto.instagram)}
-        </a>
+        {enlacesInstagram(contacto).map((url, i) => (
+          <span key={url}>
+            {i > 0 && " · "}
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              {usuarioInstagram(url)}
+            </a>
+          </span>
+        ))}
       </li>
     </ul>
   );

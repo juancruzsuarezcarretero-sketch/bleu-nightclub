@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONTENT, parseContent, usuarioInstagram } from "./content";
+import { DEFAULT_CONTENT, enlacesInstagram, parseContent, usuarioInstagram } from "./content";
 import { reservationFromMapSelection, reservationFromPaquete, textoPrecio } from "./reservation-selection";
 import { MAP_SECTORS, sectoresConPrecios } from "./map-sectors";
 
@@ -119,5 +119,28 @@ describe("precios del mapa", () => {
   it("mapa inválido vuelve al precio de siempre", () => {
     expect(parseContent([{ key: "mapa", value: { backstage: -1 } }]).mapa).toEqual(DEFAULT_CONTENT.mapa);
     expect(parseContent([{ key: "mapa", value: { backstage: 1800000 } }]).mapa).toEqual({ backstage: 1800000, creditoConsumo: DEFAULT_CONTENT.mapa.creditoConsumo });
+  });
+});
+
+describe("segundo link de Instagram", () => {
+  it("un contacto publicado antes de existir el segundo link sigue valiendo y no tiene segundo link", () => {
+    const viejo: Record<string, unknown> = { ...DEFAULT_CONTENT.contacto };
+    delete viejo.instagram2;
+    const c = parseContent([{ key: "contacto", value: viejo }]).contacto;
+    expect(c.instagram2).toBe("");
+    expect(enlacesInstagram(c)).toEqual([DEFAULT_CONTENT.contacto.instagram]);
+  });
+
+  it("toma el segundo link cuando es de Instagram y lo suma al primero", () => {
+    const contacto = { ...DEFAULT_CONTENT.contacto, instagram2: "https://instagram.com/barto.club" };
+    const c = parseContent([{ key: "contacto", value: contacto }]).contacto;
+    expect(enlacesInstagram(c)).toEqual(["https://instagram.com/bleu.club", "https://instagram.com/barto.club"]);
+  });
+
+  it("rechaza un segundo link de otro dominio o peligroso", () => {
+    for (const instagram2 of ["https://ejemplo.com/x", "javascript:alert(1)"]) {
+      const roto = { ...DEFAULT_CONTENT.contacto, instagram2 };
+      expect(parseContent([{ key: "contacto", value: roto }]).contacto).toEqual(DEFAULT_CONTENT.contacto);
+    }
   });
 });

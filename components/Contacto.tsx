@@ -13,7 +13,7 @@ import {
 import { Clock, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/SocialIcons";
 import { useContent } from "@/context/ContentContext";
-import { usuarioInstagram } from "@/lib/content";
+import { enlacesInstagram, usuarioInstagram } from "@/lib/content";
 import {
   whatsappUrl,
   buildReservationWhatsAppMessage,
@@ -261,9 +261,11 @@ export default function Contacto() {
                   <InstagramIcon size={18} className="mt-0.5 text-[#FF9A3C]" />
                   <div>
                     <p className="font-mono text-xs uppercase tracking-wider text-[#F0F0F0]/40">Redes sociales</p>
-                    <a href={contacto.instagram} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#F0F0F0]/70 hover:text-[#FF9A3C]">
-                      {usuarioInstagram(contacto.instagram)} - Instagram
-                    </a>
+                    {enlacesInstagram(contacto).map((url) => (
+                      <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block font-mono text-sm text-[#F0F0F0]/70 hover:text-[#FF9A3C]">
+                        {usuarioInstagram(url)} - Instagram
+                      </a>
+                    ))}
                   </div>
                 </div>
               </div>

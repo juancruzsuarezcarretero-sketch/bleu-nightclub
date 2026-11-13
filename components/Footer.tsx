@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon, TikTokIcon } from "@/components/icons/SocialIcons";
 import { useContent } from "@/context/ContentContext";
+import { enlacesInstagram, usuarioInstagram } from "@/lib/content";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export default function Footer() {
@@ -16,15 +17,18 @@ export default function Footer() {
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-6">
-          <a
-            href={contacto.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]"
-          >
-            <InstagramIcon size={22} />
-          </a>
+          {enlacesInstagram(contacto).map((url) => (
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Instagram ${usuarioInstagram(url)}`}
+              className="text-[#F0F0F0]/40 transition-colors hover:text-[#FF9A3C]"
+            >
+              <InstagramIcon size={22} />
+            </a>
+          ))}
           <a
             href={contacto.tiktok || "#"}
             aria-label="TikTok"

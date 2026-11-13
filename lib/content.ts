@@ -30,6 +30,7 @@ export const imagenPermitida = (valor: string) =>
   hostPermitido(["images.unsplash.com", "plus.unsplash.com", hostSupabase()].filter(Boolean))(valor);
 
 const instagram = z.string().trim().refine(hostPermitido(["instagram.com", "www.instagram.com"]), "Link de Instagram inválido");
+const instagram2 = z.union([z.literal(""), instagram]).default("");
 const tiktok = z.union([
   z.literal(""),
   z.string().trim().refine(hostPermitido(["tiktok.com", "www.tiktok.com"]), "Link de TikTok inválido"),
@@ -39,6 +40,7 @@ export const contactoSchema = z.object({
   whatsapp: z.string().regex(/^\d{8,15}$/, "Solo números, con código de país"),
   whatsappDisplay: texto(30),
   instagram,
+  instagram2,
   tiktok,
   direccion: z.object({ calle: texto(80), ciudad: texto(40), region: texto(40), pais: z.string().length(2) }),
   horarios: texto(120),
@@ -126,6 +128,7 @@ export const DEFAULT_CONTENT: Content = {
     whatsapp: "5493544433834",
     whatsappDisplay: "+54 9 354 443-3834",
     instagram: "https://instagram.com/bleu.club",
+    instagram2: "",
     tiktok: "",
     direccion: { calle: "Av. Marcelo T. de Alvear 635", ciudad: "Córdoba", region: "Córdoba", pais: "AR" },
     horarios: "Viernes y Sábados · 00:00 a 05:00 hs",
@@ -169,6 +172,9 @@ export const DEFAULT_CONTENT: Content = {
   },
   mapa: { backstage: 1500000, creditoConsumo: CREDITO_CONSUMO_INICIAL },
 };
+
+/** Los links de Instagram cargados (el segundo es opcional), en orden. */
+export const enlacesInstagram = (c: Pick<Contacto, "instagram" | "instagram2">) => [c.instagram, c.instagram2].filter(Boolean);
 
 /** Usuario de Instagram a partir del link (`https://instagram.com/bleu.club` → `@bleu.club`). */
 export const usuarioInstagram = (url: string) => `@${url.replace(/\/+$/, "").split("/").pop() ?? ""}`;

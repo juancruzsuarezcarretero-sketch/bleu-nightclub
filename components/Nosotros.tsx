@@ -1,6 +1,7 @@
 "use client";
 import { MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/SocialIcons";
+import { enlacesInstagram, usuarioInstagram } from "@/lib/content";
 import { FadeIn } from "@/components/FadeIn";
 import NuestrasNoches from "@/components/NuestrasNoches";
 import { whatsappUrl } from "@/lib/whatsapp";
@@ -39,15 +40,18 @@ export default function Nosotros() {
               </p>
             </div>
             <div className="mt-8 flex gap-4">
-              <a
-                href={contacto.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="flex h-10 w-10 items-center justify-center border border-white/10 text-[#F0F0F0]/60 transition-all hover:border-[#FF6A00] hover:text-[#FF9A3C]"
-              >
-                <InstagramIcon size={18} />
-              </a>
+              {enlacesInstagram(contacto).map((url) => (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Instagram ${usuarioInstagram(url)}`}
+                  className="flex h-10 w-10 items-center justify-center border border-white/10 text-[#F0F0F0]/60 transition-all hover:border-[#FF6A00] hover:text-[#FF9A3C]"
+                >
+                  <InstagramIcon size={18} />
+                </a>
+              ))}
               <a
                 href={whatsappUrl(contacto.whatsapp)}
                 target="_blank"
